@@ -1,14 +1,31 @@
 #include <catch2/catch_test_macros.hpp>
+#include <my_lisp/QuarkTable.hpp>
 
 
-#include <my_lisp/sample_library.hpp>
-
-
-TEST_CASE("Factorials are computed", "[factorial]")
+TEST_CASE("Table is default constructed as empty", "[QuarkTable]")
 {
-  REQUIRE(factorial(0) == 1);
-  REQUIRE(factorial(1) == 1);
-  REQUIRE(factorial(2) == 2);
-  REQUIRE(factorial(3) == 6);
-  REQUIRE(factorial(10) == 3628800);
+  QuarkTable qt;
+
+  REQUIRE(qt.empty());
+}
+
+TEST_CASE("contains returns false when string hasn't been converted into a Quark", "[QuarkTable]")
+{
+  QuarkTable qt;
+
+  REQUIRE(qt.empty());
+  REQUIRE(qt.contains("hello") == false);
+}
+
+TEST_CASE("Getting a quark on an unseen string returns a new Quark", "[QuarkTable]")
+{
+  QuarkTable qt;
+
+  REQUIRE(qt.empty());
+  REQUIRE(qt.contains("hello") == false);
+
+  Quark q1 = qt.get_quark("hello");
+
+  REQUIRE(qt.size() == 1);
+  REQUIRE(qt.contains("hello") == true);
 }
