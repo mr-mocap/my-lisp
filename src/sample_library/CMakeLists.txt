@@ -1,7 +1,11 @@
 include(GenerateExportHeader)
 
 
+<<<<<<< HEAD
 add_library(sample_library sample_library.cpp)
+=======
+add_library(sample_library "SymbolTable.cpp")
+>>>>>>> 39727e8 (Rename Quark to Symbol)
 
 
 
