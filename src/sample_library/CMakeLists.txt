@@ -1,7 +1,7 @@
 include(GenerateExportHeader)
 
 
-add_library(sample_library QuarkTable.cpp)
+add_library(sample_library "SymbolTable.cpp")
 
 
 

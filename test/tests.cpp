@@ -1,31 +1,31 @@
 #include <catch2/catch_test_macros.hpp>
-#include <my_lisp/QuarkTable.hpp>
+#include <my_lisp/SymbolTable.hpp>
 
 
-TEST_CASE("Table is default constructed as empty", "[QuarkTable]")
+TEST_CASE("Table is default constructed as empty", "[SymbolTable]")
 {
-  QuarkTable qt;
+  SymbolTable st;
 
-  REQUIRE(qt.empty());
+  REQUIRE(st.empty());
 }
 
-TEST_CASE("contains returns false when string hasn't been converted into a Quark", "[QuarkTable]")
+TEST_CASE("contains returns false when string hasn't been converted into a Symbol", "[SymbolTable]")
 {
-  QuarkTable qt;
+  SymbolTable st;
 
-  REQUIRE(qt.empty());
-  REQUIRE(qt.contains("hello") == false);
+  REQUIRE(st.empty());
+  REQUIRE(st.contains("hello") == false);
 }
 
-TEST_CASE("Getting a quark on an unseen string returns a new Quark", "[QuarkTable]")
+TEST_CASE("Getting a quark on an unseen string returns a new Symbol", "[SymbolTable]")
 {
-  QuarkTable qt;
+  SymbolTable st;
 
-  REQUIRE(qt.empty());
-  REQUIRE(qt.contains("hello") == false);
+  REQUIRE(st.empty());
+  REQUIRE(st.contains("hello") == false);
 
-  Quark q1 = qt.get_quark("hello");
+  Symbol q1 = st.get_symbol("hello");
 
-  REQUIRE(qt.size() == 1);
-  REQUIRE(qt.contains("hello") == true);
+  REQUIRE(st.size() == 1);
+  REQUIRE(st.contains("hello") == true);
 }

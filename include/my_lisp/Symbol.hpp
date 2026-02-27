@@ -1,11 +1,11 @@
 #pragma once
 
 
-struct Quark
+struct Symbol
 {
   int value = 0;
 
-  constexpr bool operator==(const Quark &other) const noexcept
+  constexpr bool operator==(Symbol other) const noexcept
   {
     return value == other.value; 
   }
