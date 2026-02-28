@@ -36,7 +36,7 @@ target_link_libraries(
   tests
   PRIVATE my_lisp::my_lisp_warnings
           my_lisp::my_lisp_options
-          my_lisp::sample_library
+          my_lisp::lisp_library
           Catch2::Catch2WithMain)
 
 my_lisp_configure_linker(tests)
@@ -65,52 +65,52 @@ catch_discover_tests(
   .xml)
 
 # Add a file containing a set of constexpr tests
-add_executable(constexpr_tests constexpr_tests.cpp)
+add_executable(conversions_tests conversions_tests.cpp)
 target_link_libraries(
-  constexpr_tests
+  conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
           my_lisp::my_lisp_options
-          my_lisp::sample_library
+          my_lisp::lisp_library
           Catch2::Catch2WithMain)
 
-my_lisp_configure_linker(constexpr_tests)
+my_lisp_configure_linker(conversions_tests)
 
 catch_discover_tests(
-  constexpr_tests
+  conversions_tests
   TEST_PREFIX
-  "constexpr."
+  "conversions."
   REPORTER
   XML
   OUTPUT_DIR
   .
   OUTPUT_PREFIX
-  "constexpr."
+  "conversions."
   OUTPUT_SUFFIX
   .xml)
 
 # Disable the constexpr portion of the test, and build again this allows us to have an executable that we can debug when
 # things go wrong with the constexpr testing
-add_executable(relaxed_constexpr_tests constexpr_tests.cpp)
+add_executable(relaxed_conversions_tests conversions_tests.cpp)
 target_link_libraries(
-  relaxed_constexpr_tests
+  relaxed_conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
           my_lisp::my_lisp_options
-          my_lisp::sample_library
+          my_lisp::lisp_library
           Catch2::Catch2WithMain)
-target_compile_definitions(relaxed_constexpr_tests PRIVATE -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
+target_compile_definitions(relaxed_conversions_tests PRIVATE -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
 
-my_lisp_configure_linker(relaxed_constexpr_tests)
+my_lisp_configure_linker(relaxed_conversions_tests)
 
 
 catch_discover_tests(
-  relaxed_constexpr_tests
+  relaxed_conversions_tests
   TEST_PREFIX
-  "relaxed_constexpr."
+  "relaxed_conversions."
   REPORTER
   XML
   OUTPUT_DIR
   .
   OUTPUT_PREFIX
-  "relaxed_constexpr."
+  "relaxed_conversions."
   OUTPUT_SUFFIX
   .xml)

@@ -1,11 +1,14 @@
 #pragma once
 
+#include <my_lisp/lisp_library_export.hpp>
+
 #include <my_lisp/Symbol.hpp>
 #include <string>
 #include <string_view>
 #include <map>
 
 
+LISP_LIBRARY_EXPORT
 class SymbolTable
 {
     struct SymbolComparator
