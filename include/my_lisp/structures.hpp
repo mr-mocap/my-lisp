@@ -1,17 +1,21 @@
 #pragma once
 
+#include <my_lisp/lisp_library_export.hpp>
+
+#include <my_lisp/Symbol.hpp>
 #include <variant>
 #include <memory>
 
 struct ConsCell;
 
-using NilType = std::monostate;
-
+using Nil         = std::monostate;
 using ConsCellPtr = std::shared_ptr<ConsCell>;
+using String      = std::string;
+
 
 struct BasicVariantType
 {
-  std::variant<NilType, ConsCellPtr> value;
+  std::variant<Nil, ConsCellPtr, String, Symbol> value;
 };
 
 struct ConsCell

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <my_lisp/lisp_library_export.hpp>
 
+
+LISP_LIBRARY_EXPORT
 struct Symbol
 {
   int value = 0;
