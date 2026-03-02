@@ -54,6 +54,41 @@
  *      Windows: use wmain for args and wide - console strategy or explicit UTF‑8 console handling; convert at the boundary.[iifx.dev], [learn.microsoft.com], [stackoverflow.com]
  */
 
+/*
+Example usage (cross-platform entry points)
+
+#ifdef _WIN32
+int wmain(int argc, wchar_t *argv[])
+{
+    // Bring argv into UTF-8 immediately (Windows: wmain avoids mis-decoded argv). [7](https://github.com/ww898/utf-cpp)[8](https://stackoverflow.com/questions/2527720/confused-about-cs-stdwstring-utf-16-utf-8-and-displaying-strings-in-a-win)
+    auto args = text_io::argv_to_utf8(argc, argv);
+
+    text_io::write_stdout_utf8(u8"Enter a line: ");
+    text_io::text line = text_io::read_stdin_line_utf8();
+
+    text_io::write_stdout_utf8(u8"\nYou typed: ");
+    text_io::write_stdout_utf8(line);
+    text_io::write_stdout_utf8(u8"\n");
+
+    return 0;
+}
+#else
+int main(int argc, char *argv[])
+{
+    auto args = text_io::argv_to_utf8(argc, argv);
+
+    text_io::write_stdout_utf8(u8"Enter a line: ");
+    text_io::text line = utf8::read_stdin_line_utf8();
+
+    text_io::write_stdout_utf8(u8"\nYou typed: ");
+    text_io::write_stdout_utf8(line);
+    text_io::write_stdout_utf8(u8"\n");
+
+    return 0;
+}
+#endif
+*/
+
 namespace text_io
 {
 
