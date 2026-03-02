@@ -2,10 +2,11 @@
 
 #include <my_lisp/lisp_library_export.hpp>
 
-#include <my_lisp/Symbol.hpp>
-#include <my_lisp/SymbolTable.hpp>
-#include <my_lisp/Checks.hpp>
-#include <my_lisp/Conversions.hpp>
+#include <my_lisp/symbol.hpp>
+#include <my_lisp/symboltable.hpp>
+#include <my_lisp/checks.hpp>
+#include <my_lisp/conversions.hpp>
 #include <my_lisp/structures.hpp>
+#include <my_lisp/text_io.hpp>
 
 //[[nodiscard]] LISP_LIBRARY_EXPORT int factorial(int) noexcept;

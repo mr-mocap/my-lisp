@@ -14,7 +14,7 @@ TEST_CASE("contains returns false when string hasn't been converted into a Symbo
   SymbolTable st;
 
   REQUIRE(st.empty());
-  REQUIRE(st.contains("hello") == false);
+  REQUIRE(st.contains( u8"hello" ) == false);
 }
 
 TEST_CASE("Getting a quark on an unseen string returns a new Symbol", "[SymbolTable]")
@@ -22,10 +22,10 @@ TEST_CASE("Getting a quark on an unseen string returns a new Symbol", "[SymbolTa
   SymbolTable st;
 
   REQUIRE(st.empty());
-  REQUIRE(st.contains("hello") == false);
+  REQUIRE(st.contains( u8"hello" ) == false);
 
-  Symbol q1 = st.get_symbol("hello");
+  Symbol q1 = st.get_symbol( u8"hello" );
 
   REQUIRE(st.size() == 1);
-  REQUIRE(st.contains("hello") == true);
+  REQUIRE(st.contains( u8"hello" ) == true);
 }

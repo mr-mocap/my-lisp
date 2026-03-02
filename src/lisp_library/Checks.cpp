@@ -1,4 +1,4 @@
-#include <my_lisp/Checks.hpp>
+#include <my_lisp/checks.hpp>
 #include <cctype>
 
 

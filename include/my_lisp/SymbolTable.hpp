@@ -2,7 +2,7 @@
 
 #include <my_lisp/lisp_library_export.hpp>
 
-#include <my_lisp/Symbol.hpp>
+#include <my_lisp/symbol.hpp>
 #include <string>
 #include <string_view>
 #include <map>
@@ -16,18 +16,18 @@ class SymbolTable
         using is_transparent = void;// Enable heterogeneous lookup
 
         template<typename T, typename U>
-        bool operator()(T lhs, U rhs) const noexcept
+        constexpr bool operator()(T lhs, U rhs) const noexcept
         {
             return lhs < rhs;
         }
     };
 
 public:
-    [[nodiscard]] Symbol get_symbol(std::string_view str) noexcept;
+    [[nodiscard]] Symbol get_symbol(std::u8string_view str) noexcept;
 
-    [[nodiscard]] std::string_view get_string(Symbol q) noexcept;
+    [[nodiscard]] std::u8string_view get_string(Symbol q) noexcept;
 
-    bool contains(std::string_view key) const noexcept
+    bool contains(std::u8string_view key) const noexcept
     {
         return m_string_to_symbol.contains(key);
     }
@@ -49,5 +49,5 @@ public:
     }
 
 protected:
-    std::map<std::string, Symbol, SymbolComparator> m_string_to_symbol;
+    std::map<std::u8string, Symbol, SymbolComparator> m_string_to_symbol;
 };
