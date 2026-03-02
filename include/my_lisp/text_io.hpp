@@ -89,6 +89,22 @@ int main(int argc, char *argv[])
 #endif
 */
 
+/*
+
+Why this pattern works (in one screen)
+
+Windows: You avoid the classic pitfalls:
+
+char** argv and console byte streams are often in a non‑UTF‑8 code page, so UTF‑8 input/output can garble. [github.com], [stackoverflow.com], [cplusplus.com]
+You instead accept UTF‑16 from the OS (wmain, ReadConsoleW) and output with WriteConsoleW, converting at the edge using Win32 conversion routines that explicitly support CP_UTF8. [linuxvox.com], [codegenes.net]
+
+
+Unix-like: Terminals commonly operate in UTF‑8 under a UTF‑8 locale; mismatches are usually locale configuration problems. [github.com], [learnmoderncpp.com], [stackoverflow.com]
+Files: You control the encoding—making them UTF‑8 removes ambiguity.
+
+*/
+
+
 namespace text_io
 {
 
