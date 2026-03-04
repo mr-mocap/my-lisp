@@ -24,7 +24,7 @@ TEST_CASE("Getting a quark on an unseen string returns a new Symbol", "[SymbolTa
   REQUIRE(st.empty());
   REQUIRE(st.contains( u8"hello" ) == false);
 
-  Symbol q1 = st.get_symbol( u8"hello" );
+  Symbol q1 = st.intern( u8"hello" );
 
   REQUIRE(st.size() == 1);
   REQUIRE(st.contains( u8"hello" ) == true);

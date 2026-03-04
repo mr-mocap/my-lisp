@@ -1,9 +1,6 @@
 #include <my_lisp/structures.hpp>
 #include <my_lisp/text_io.hpp>
 
-StringView fetch_symbol_value(Symbol s)
-{
-}
 
 void print(const SExpression &expr)
 {

@@ -3,9 +3,11 @@
 #include <my_lisp/lisp_library_export.hpp>
 
 #include <my_lisp/symbol.hpp>
+#include <my_lisp/fundamental_types.hpp>
 #include <string>
 #include <string_view>
 #include <map>
+#include <optional>
 
 
 LISP_LIBRARY_EXPORT
@@ -23,11 +25,11 @@ class SymbolTable
     };
 
 public:
-    [[nodiscard]] Symbol get_symbol(std::u8string_view str) noexcept;
+    [[nodiscard]] Symbol intern(StringView str) noexcept;
 
-    [[nodiscard]] std::u8string_view get_string(Symbol q) noexcept;
+    [[nodiscard]] StringView get_string(Symbol q) noexcept;
 
-    bool contains(std::u8string_view key) const noexcept
+    bool contains(StringView key) const noexcept
     {
         return m_string_to_symbol.contains(key);
     }
@@ -39,6 +41,16 @@ public:
                 return true;
         }
         return false;
+    }
+
+    std::optional<Symbol> find_symbol(StringView str) const noexcept
+    {
+        auto it = m_string_to_symbol.find(str);
+
+        if (it != m_string_to_symbol.end())
+            return it->second;
+
+        return std::nullopt;
     }
 
     bool empty() const noexcept { return m_string_to_symbol.empty(); }

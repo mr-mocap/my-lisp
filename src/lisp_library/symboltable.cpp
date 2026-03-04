@@ -12,7 +12,7 @@ Symbol GenerateUniqueSymbol()
 }
 }
 
-Symbol SymbolTable::get_symbol(std::u8string_view str) noexcept
+Symbol SymbolTable::intern(std::u8string_view str) noexcept
 {
     auto it = m_string_to_symbol.find(str);
 
