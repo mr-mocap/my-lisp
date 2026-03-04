@@ -130,31 +130,17 @@ void print(const SExpression &expr)
 }
 #endif
 
-ConsCellPtr cons(SExpression &&first, SExpression &&rest)
+/**
+ *  @note Use "will-move-from" parameters to avoid unnecessary copies.
+ *        If the caller has an lvalue, then a copy will be made for the paramter.
+ *        If the caller has an rvalue, then the move constructor will be used for the parameter.
+ *        Then we just use move internally to move the parameters into the ConsCell, guaranteeing
+ *        that we only make one copy/move per argument, regardless of whether the caller has an
+ *        lvalue or rvalue.
+ */
+ConsCellPtr cons(SExpression first, SExpression rest)
 {
   auto cell = std::make_shared<ConsCell>( std::move(first), std::move(rest) );
 
   return cell;
-}
-
-ConsCellPtr cons(const SExpression &first, const SExpression &rest)
-{
-  auto cell = std::make_shared<ConsCell>( first, rest );
-
-  return cell;
-}
-
-ConsCellPtr cons(SExpression &&first, const SExpression &rest)
-{
-  auto cell = std::make_shared<ConsCell>( std::move(first), rest );
-
-  return cell;
-}
-
-ConsCellPtr cons(const SExpression &first, SExpression &&rest)
-{
-  auto cell = std::make_shared<ConsCell>( first, std::move(rest) );
-
-  return cell;
-}
-
+} 
