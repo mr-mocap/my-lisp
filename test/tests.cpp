@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <my_lisp/lisp_library.hpp>
+#include <sstream>
 
 
 TEST_CASE("Table is default constructed as empty", "[SymbolTable]")
@@ -212,15 +213,21 @@ TEST_CASE("type() returns what type an SExpression is constructed with", "[SExpr
 TEST_CASE("print() can print a Nil SExpression", "[print]")
 {
     SExpression expr{ Nil{} };
+    std::ostringstream oss;
 
-    print(expr);
+    print(expr, oss);
+
+    REQUIRE(oss.str() == "NIL");
 }
 
 TEST_CASE("print() can print a String SExpression", "[print]")
 {
     SExpression expr{ String{ u8"Hello, World!" } };
+    std::ostringstream oss;
 
-    print(expr);
+    print(expr, oss);
+
+    REQUIRE(oss.str() == "\"Hello, World!\"");
 }
 #if 0
 TEST_CASE("print() can print a Symbol SExpression", "[print]")

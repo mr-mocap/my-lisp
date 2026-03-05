@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <filesystem>
+#include <iostream>
 
 /**
  *  Text I/O Boundary
@@ -132,16 +133,25 @@ inline std::u8string_view to_utf8_string_view(std::string_view b)
     return std::u8string_view( reinterpret_cast<const char8_t *>(b.data()), b.size() );
 }
 
-std::u8string read_stdin_line_utf8();
+std::u8string read_line_utf8_from(std::istream &input);
 
-void write_stdout_utf8(std::u8string_view out);
+inline std::u8string read_stdin_line_utf8()
+{
+    return read_line_utf8_from( std::cin );
+}
 
-void write_stdout_line_utf8(std::u8string_view out);
+void write_utf8_to(std::ostream &output, std::u8string_view data);
 
+inline void write_stdout_utf8(std::u8string_view out)
+{
+    write_utf8_to( std::cout, out );
+}
 
-std::u8string read_text_file_utf8(const std::filesystem::path &filename);
-
-void write_text_file_utf8(const std::filesystem::path &filename, std::u8string_view content);
+inline void write_stdout_line_utf8(std::u8string_view out)
+{
+    write_stdout_utf8(out);
+    write_stdout_utf8( u8"\n" );
+}
 
 #if defined(_WIN32) || defined(_WIN64)
 std::vector<std::u8string> argv_to_utf8(int argc, wchar_t *argv[]);

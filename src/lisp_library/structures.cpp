@@ -2,35 +2,38 @@
 #include <my_lisp/text_io.hpp>
 
 
-void print(const SExpression &expr)
+void print(const SExpression &expr, std::ostream &output)
 {
-    switch ( expr.type() )
-    {
-    case SExpression::Nil:
-        text_io::write_stdout_utf8( u8"NIL" );
-        break;
-    case SExpression::String:
-        {
-            std::u8string_view s = std::get<std::u8string>(expr.value);
+    struct Visitor {
+        Visitor(std::ostream &out) : output(out) {}
 
-            text_io::write_stdout_utf8( u8"\"" );
-            text_io::write_stdout_utf8( s );
-            text_io::write_stdout_utf8( u8"\"" );
+        void operator()(Nil) const
+        {
+            output << text_io::to_string_view( u8"NIL" );
         }
-        break;
-    case SExpression::Symbol:
+        void operator()(const String &s) const
+        {
+            output << text_io::to_string_view( u8"\"" );
+            output << text_io::to_string_view( s );
+            output << text_io::to_string_view( u8"\"" );
+        }
+        void operator()(Symbol) const
         {
             //write_stdout_utf8( sym.name );
-            text_io::write_stdout_utf8( u8"NOT IMPLEMENTED" );
+            output << text_io::to_string_view( u8"NOT IMPLEMENTED" );
         }
-        break;
-    case SExpression::ConsCell:
+        void operator()(const ConsCellPtr &) const
         {
-            text_io::write_stdout_utf8(u8"NOT IMPLEMENTED");
+            output << text_io::to_string_view( u8"NOT IMPLEMENTED" );
         }
-        break;
-    }
+
+        std::ostream &output;
+    };
+
+    std::visit(Visitor( output ), expr.value);
 }
+
+
 #if 0
                 text_io::write_stdout_utf8( u8"(" );
 
