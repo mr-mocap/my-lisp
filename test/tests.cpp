@@ -5,30 +5,30 @@
 
 TEST_CASE("Table is default constructed as empty", "[SymbolTable]")
 {
-  SymbolTable st;
+    SymbolTable st;
 
-  REQUIRE(st.empty());
+    REQUIRE(st.empty());
 }
 
 TEST_CASE("contains returns false when string hasn't been converted into a Symbol", "[SymbolTable]")
 {
-  SymbolTable st;
+    SymbolTable st;
 
-  REQUIRE(st.empty());
-  REQUIRE(st.contains( u8"hello" ) == false);
+    REQUIRE(st.empty());
+    REQUIRE(st.contains(u8"hello") == false);
 }
 
 TEST_CASE("interning a string for the first time returns a new Symbol", "[SymbolTable]")
 {
-  SymbolTable st;
+    SymbolTable st;
 
-  REQUIRE(st.empty());
-  REQUIRE(st.contains( u8"hello" ) == false);
+    REQUIRE(st.empty());
+    REQUIRE(st.contains(u8"hello") == false);
 
-  Symbol q1 = st.intern( u8"hello" );
+    Symbol q1 = st.intern(u8"hello");
 
-  REQUIRE(st.size() == 1);
-  REQUIRE(st.contains( u8"hello" ) == true);
+    REQUIRE(st.size() == 1);
+    REQUIRE(st.contains(u8"hello") == true);
 }
 
 TEST_CASE("uninterning a Symbol that exists removes it from the SymbolTable", "[SymbolTable]")
