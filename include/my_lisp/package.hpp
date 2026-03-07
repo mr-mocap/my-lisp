@@ -27,6 +27,11 @@ public:
     {
         return symbol_table.intern(symbol_name);
     }
+
+    void unintern(Symbol symbol)
+    {
+        symbol_table.unintern(symbol);
+    }
 protected:
     String      name;
     SymbolTable symbol_table;
