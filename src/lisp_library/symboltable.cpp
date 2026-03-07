@@ -25,6 +25,18 @@ Symbol SymbolTable::intern(std::u8string_view str) noexcept
     return r.first->second;
 }
 
+void SymbolTable::unintern(Symbol s) noexcept
+{
+    for ( auto it = m_string_to_symbol.begin(); it != m_string_to_symbol.end(); ++it )
+    {
+        if ( it->second == s )
+        {
+            m_string_to_symbol.erase(it);
+            return;
+        }
+    }
+}
+
 std::u8string_view SymbolTable::get_string(Symbol q) noexcept
 {
     for ( const auto &[key, value] : m_string_to_symbol )

@@ -27,6 +27,8 @@ class SymbolTable
 public:
     [[nodiscard]] Symbol intern(StringView str) noexcept;
 
+    void unintern(Symbol s) noexcept;
+
     [[nodiscard]] StringView get_string(Symbol q) noexcept;
 
     bool contains(StringView key) const noexcept

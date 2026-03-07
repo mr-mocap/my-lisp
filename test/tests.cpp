@@ -18,7 +18,7 @@ TEST_CASE("contains returns false when string hasn't been converted into a Symbo
   REQUIRE(st.contains( u8"hello" ) == false);
 }
 
-TEST_CASE("Getting a quark on an unseen string returns a new Symbol", "[SymbolTable]")
+TEST_CASE("interning a string for the first time returns a new Symbol", "[SymbolTable]")
 {
   SymbolTable st;
 
@@ -29,6 +29,21 @@ TEST_CASE("Getting a quark on an unseen string returns a new Symbol", "[SymbolTa
 
   REQUIRE(st.size() == 1);
   REQUIRE(st.contains( u8"hello" ) == true);
+}
+
+TEST_CASE("uninterning a Symbol that exists removes it from the SymbolTable", "[SymbolTable]")
+{
+    SymbolTable st;
+
+    Symbol q1 = st.intern(u8"hello");
+
+    REQUIRE(st.size() == 1);
+    REQUIRE(st.contains( u8"hello" ) == true);
+
+    st.unintern(q1);
+
+    REQUIRE(st.size() == 0);
+    REQUIRE(st.contains( u8"hello" ) == false);
 }
 
 TEST_CASE("Default constructed SExpression is Nil", "[SExpression]")
