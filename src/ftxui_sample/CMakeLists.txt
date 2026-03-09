@@ -11,7 +11,7 @@ target_link_system_libraries(
           CLI11::CLI11
           fmt::fmt
           spdlog::spdlog
-          lefticus::tools
+          #lefticus::tools
           ftxui::screen
           ftxui::dom
           ftxui::component)
