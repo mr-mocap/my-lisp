@@ -3,6 +3,8 @@
 #include <my_lisp/fundamental_types.hpp>
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/text_io.hpp>
+#include <vector>
+#include <algorithm>
 
 
 class Package
@@ -46,7 +48,54 @@ public:
     {
         m_symbol_table.unintern(symbol);
     }
+
+    bool uses_package(StringView package_name) const
+    {
+        return std::ranges::find(m_uses_packages, package_name) != m_uses_packages.end();
+    }
+
+    void use_package(StringView package_name)
+    {
+        if ( !uses_package(package_name) )
+            m_uses_packages.emplace_back( package_name );
+    }
+
+    bool is_exported_name(StringView name) const
+    {
+        return std::ranges::find(m_exported_names, name) != m_exported_names.end();
+    }
+
+    void export_name(StringView name)
+    {
+        if ( !is_exported_name(name) )
+            m_exported_names.emplace_back(name);
+    }
+
+    bool is_shadowed_name(StringView name) const
+    {
+        return std::ranges::find(m_shadowing_names, name) != m_shadowing_names.end();
+    }
+
+    void shadow_name(StringView name)
+    {
+        if ( !is_shadowed_name(name) )
+        {
+            m_symbol_table.intern_with_no_retval(name);
+            m_shadowing_names.emplace_back(name);
+        }
+    }
+
+    void remove_shadowed_name(StringView name)
+    {
+        auto it = std::ranges::find(m_shadowing_names, name);
+
+        if (it != m_shadowing_names.end())
+            m_shadowing_names.erase(it);
+    }
 protected:
-    String      m_name;
-    SymbolTable m_symbol_table;
+    String              m_name;
+    SymbolTable         m_symbol_table;
+    std::vector<String> m_uses_packages;
+    std::vector<String> m_exported_names;
+    std::vector<String> m_shadowing_names;
 };

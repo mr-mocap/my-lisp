@@ -25,6 +25,14 @@ Symbol SymbolTable::intern(std::u8string_view str) noexcept
     return r.first->second;
 }
 
+void SymbolTable::intern_with_no_retval(std::u8string_view str) noexcept
+{
+    auto it = m_string_to_symbol.find(str);
+
+    if ( it == m_string_to_symbol.end() )
+        (void)m_string_to_symbol.emplace( std::make_pair( std::u8string(str), GenerateUniqueSymbol() ) );
+}
+
 void SymbolTable::unintern(Symbol s) noexcept
 {
     auto it = std::ranges::find_if( m_string_to_symbol,

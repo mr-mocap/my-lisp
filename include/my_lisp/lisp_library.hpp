@@ -9,5 +9,6 @@
 #include <my_lisp/conversions.hpp>
 #include <my_lisp/structures.hpp>
 #include <my_lisp/text_io.hpp>
+#include <my_lisp/lispenvironment.hpp>
 
 //[[nodiscard]] LISP_LIBRARY_EXPORT int factorial(int) noexcept;

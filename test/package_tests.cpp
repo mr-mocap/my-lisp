@@ -54,3 +54,62 @@ TEST_CASE("uninterning a name removes the Symbol from the Package", "[Package]")
 
     REQUIRE(p.find_symbol(u8"foo").has_value() == false);
 }
+
+TEST_CASE("uses_package returns true after use_package is called with same name", "[Package]")
+{
+    Package p("TestPackage");
+
+    REQUIRE(!p.uses_package( u8"other_package" ));
+
+    p.use_package( u8"other_package" );
+
+    REQUIRE(p.uses_package(u8"other_package"));
+}
+
+TEST_CASE("is_exported returns true after export_symbol has been called", "[Package]")
+{
+    Package p("TestPackage");
+
+    REQUIRE(p.find_symbol(u8"foo").has_value() == false);
+
+    Symbol s = p.intern(u8"foo");
+
+    REQUIRE(p.find_symbol(u8"foo").has_value());
+    REQUIRE(p.find_symbol(u8"foo").value() == s);
+    REQUIRE(!p.is_exported_name(u8"foo"));
+
+    p.export_name(u8"foo");
+
+    REQUIRE(p.is_exported_name(u8"foo"));
+}
+
+TEST_CASE("is_shadowed returns true after shadow_name has been called", "[Package]")
+{
+    Package p("TestPackage");
+
+    REQUIRE(!p.find_symbol(u8"foo").has_value());
+    REQUIRE(!p.is_shadowed_name(u8"foo"));
+
+    p.shadow_name(u8"foo");
+
+    REQUIRE(p.is_shadowed_name(u8"foo"));
+    REQUIRE(p.find_symbol(u8"foo").has_value());
+}
+
+TEST_CASE("remove_shadowed_name removes the name from the shadowing names", "[Package]")
+{
+    Package p("TestPackage");
+
+    REQUIRE(!p.find_symbol(u8"foo").has_value());
+    REQUIRE(!p.is_shadowed_name(u8"foo"));
+
+    p.shadow_name(u8"foo");
+
+    REQUIRE(p.is_shadowed_name(u8"foo"));
+    REQUIRE(p.find_symbol(u8"foo").has_value());
+
+    p.remove_shadowed_name(u8"foo");
+
+    REQUIRE(!p.is_shadowed_name(u8"foo"));
+    REQUIRE(p.find_symbol(u8"foo").has_value()); // It is STILL a Symbol in the Package, just not shadowed anymore
+}
