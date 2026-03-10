@@ -10,7 +10,6 @@
 #include <optional>
 
 
-LISP_LIBRARY_EXPORT
 class SymbolTable
 {
     struct SymbolComparator
@@ -25,6 +24,8 @@ class SymbolTable
     };
 
 public:
+    SymbolTable() = default;
+
     [[nodiscard]] Symbol intern(StringView str) noexcept;
 
     void unintern(Symbol s) noexcept;

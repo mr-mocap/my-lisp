@@ -2,37 +2,51 @@
 
 #include <my_lisp/fundamental_types.hpp>
 #include <my_lisp/symboltable.hpp>
+#include <my_lisp/text_io.hpp>
 
 
 class Package
 {
 public:
-    Package(String &&package_name) : name(std::move(package_name)) {}
-    Package(StringView package_name) : name(package_name) {}
-    Package(StringView package_name, SymbolTable &&sym_table)
+    Package() = delete;
+    explicit Package(String package_name) : m_name( std::move(package_name) ) {}
+    explicit Package(std::string package_name) : m_name( text_io::to_utf8_string(package_name) ) {}
+    Package(String package_name, SymbolTable sym_table)
         :
-        name(package_name),
-        symbol_table( std::move(sym_table) )
+        m_name(package_name),
+        m_symbol_table( std::move(sym_table) )
+    {
+    }
+    Package(std::string package_name, SymbolTable sym_table)
+        :
+        m_name( text_io::to_utf8_string(package_name) ),
+        m_symbol_table( std::move(sym_table) )
     {
     }
 
-    StringView name() const noexcept { return name; }
+    Package(const Package &) = default;
+    Package &operator=(const Package &) = default;
+
+    Package(Package &&) = default;
+    Package &operator=(Package &&) = default;
+
+    StringView name() const noexcept { return m_name; }
 
     std::optional<Symbol> find_symbol(StringView symbol_name) const
     {
-        return symbol_table.find_symbol(symbol_name);
+        return m_symbol_table.find_symbol(symbol_name);
     }
 
     Symbol intern(StringView symbol_name)
     {
-        return symbol_table.intern(symbol_name);
+        return m_symbol_table.intern(symbol_name);
     }
 
     void unintern(Symbol symbol)
     {
-        symbol_table.unintern(symbol);
+        m_symbol_table.unintern(symbol);
     }
 protected:
-    String      name;
-    SymbolTable symbol_table;
+    String      m_name;
+    SymbolTable m_symbol_table;
 };
