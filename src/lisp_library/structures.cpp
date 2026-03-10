@@ -5,7 +5,7 @@
 void print(const SExpression &expr, std::ostream &output)
 {
     struct Visitor {
-        Visitor(std::ostream &out) : output(out) {}
+        explicit Visitor(std::ostream &out) : output(out) {}
 
         void operator()(Nil) const
         {
@@ -30,7 +30,7 @@ void print(const SExpression &expr, std::ostream &output)
         std::ostream &output;
     };
 
-    std::visit(Visitor( output ), expr.value);
+    std::visit( Visitor( output ), expr.value );
 }
 
 

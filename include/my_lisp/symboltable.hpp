@@ -29,7 +29,7 @@ public:
 
     void unintern(Symbol s) noexcept;
 
-    [[nodiscard]] StringView get_string(Symbol q) noexcept;
+    [[nodiscard]] StringView get_string(Symbol q) const noexcept;
 
     bool contains(StringView key) const noexcept
     {

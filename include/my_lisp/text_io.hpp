@@ -140,7 +140,7 @@ inline std::u8string read_stdin_line_utf8()
     return read_line_utf8_from( std::cin );
 }
 
-void write_utf8_to(std::ostream &output, std::u8string_view data);
+void write_utf8_to(std::ostream &output, std::u8string_view content);
 
 inline void write_stdout_utf8(std::u8string_view out)
 {

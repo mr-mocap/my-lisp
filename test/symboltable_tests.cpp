@@ -24,6 +24,7 @@ TEST_CASE("interning a string for the first time returns a new Symbol", "[Symbol
     REQUIRE(st.empty());
     REQUIRE(st.contains(u8"hello") == false);
 
+    /* cppcheck-suppress unreadVariable */
     Symbol q1 = st.intern(u8"hello");
 
     REQUIRE(st.size() == 1);
@@ -34,6 +35,7 @@ TEST_CASE("uninterning a Symbol that exists removes it from the SymbolTable", "[
 {
     SymbolTable st;
 
+    /* cppcheck-suppress unreadVariable */
     Symbol q1 = st.intern(u8"hello");
 
     REQUIRE(st.size() == 1);

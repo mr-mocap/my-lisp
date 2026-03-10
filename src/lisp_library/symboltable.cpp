@@ -27,17 +27,17 @@ Symbol SymbolTable::intern(std::u8string_view str) noexcept
 
 void SymbolTable::unintern(Symbol s) noexcept
 {
-    for ( auto it = m_string_to_symbol.begin(); it != m_string_to_symbol.end(); ++it )
-    {
-        if ( it->second == s )
-        {
-            m_string_to_symbol.erase(it);
-            return;
-        }
-    }
+    auto it = std::ranges::find_if( m_string_to_symbol,
+                                    [s](const auto &pair)
+                                    {
+                                        return pair.second == s;
+                                    });
+
+    if ( it != m_string_to_symbol.end() )
+        m_string_to_symbol.erase(it);
 }
 
-std::u8string_view SymbolTable::get_string(Symbol q) noexcept
+std::u8string_view SymbolTable::get_string(Symbol q) const noexcept
 {
     for ( const auto &[key, value] : m_string_to_symbol )
     {
