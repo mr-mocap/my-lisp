@@ -1,7 +1,7 @@
 include(GenerateExportHeader)
 
 
-add_library(lisp_library symboltable.cpp checks.cpp conversions.cpp structures.cpp text_io.cpp lispenvironment.cpp)
+add_library(lisp_library symboltable.cpp checks.cpp conversions.cpp structures.cpp text_io.cpp )
 
 
 
