@@ -11,26 +11,24 @@ class Package
 {
 public:
     Package() = delete;
-    explicit Package(String package_name) : m_name( std::move(package_name) ) {}
-    explicit Package(std::string package_name) : m_name( text_io::to_utf8_string(package_name) ) {}
+
+    // Converting Constructors
+    // Also sink parameters (that's why we take them by value and move them into members)
+    Package(String      package_name) : m_name( std::move(package_name) ) {}
+    Package(std::string package_name) : m_name( std::move( text_io::to_utf8_string(package_name) ) ) {}
+
     Package(String package_name, SymbolTable sym_table)
         :
-        m_name(package_name),
+        m_name( std::move(package_name) ),
         m_symbol_table( std::move(sym_table) )
     {
     }
     Package(std::string package_name, SymbolTable sym_table)
         :
-        m_name( text_io::to_utf8_string(package_name) ),
+        m_name( std::move( text_io::to_utf8_string(package_name) ) ),
         m_symbol_table( std::move(sym_table) )
     {
     }
-
-    Package(const Package &) = default;
-    Package &operator=(const Package &) = default;
-
-    Package(Package &&) = default;
-    Package &operator=(Package &&) = default;
 
     StringView name() const noexcept { return m_name; }
 
