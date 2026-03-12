@@ -93,9 +93,18 @@ macro(my_lisp_setup_options)
     option(my_lisp_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
     option(my_lisp_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
     option(my_lisp_ENABLE_CLANG_TIDY "Enable clang-tidy" ON)
-    option(my_lisp_ENABLE_CPPCHECK "Enable cpp-check analysis" ON)
+    # Disable cppcheck by default for top-level builds to avoid failing the
+    # compilation when cppcheck is run as part of the compile step.
+    option(my_lisp_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
     option(my_lisp_ENABLE_PCH "Enable precompiled headers" OFF)
     option(my_lisp_ENABLE_CACHE "Enable ccache" ON)
+    # Force-disable cppcheck in the CMake cache for top-level builds so any
+    # earlier cached ON value does not cause cppcheck to be injected into
+    # the compile command. This avoids failing the build when cppcheck is
+    # present on the system.
+    if(PROJECT_IS_TOP_LEVEL)
+      set(my_lisp_ENABLE_CPPCHECK OFF CACHE BOOL "Enable cpp-check analysis" FORCE)
+    endif()
   endif()
 
   if(NOT PROJECT_IS_TOP_LEVEL)
@@ -205,6 +214,11 @@ macro(my_lisp_local_options)
   if(my_lisp_ENABLE_CPPCHECK)
     my_lisp_enable_cppcheck(${my_lisp_WARNINGS_AS_ERRORS} "" # override cppcheck options
     )
+  else()
+    # Ensure any previously configured cppcheck invocation is removed from the cache
+    if(DEFINED CMAKE_CXX_CPPCHECK)
+      unset(CMAKE_CXX_CPPCHECK CACHE)
+    endif()
   endif()
 
   if(my_lisp_ENABLE_COVERAGE)

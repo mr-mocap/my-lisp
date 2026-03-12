@@ -3,10 +3,10 @@
 #include <my_lisp/package.hpp>
 
 
-class LispEnvironment
+class Environment
 {
 public:
-    LispEnvironment()
+    Environment()
         :
         m_packages( { Package( u8"KEYWORD" ) } )
     {

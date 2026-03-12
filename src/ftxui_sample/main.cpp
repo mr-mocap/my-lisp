@@ -20,7 +20,38 @@
 #include <ftxui/component/screen_interactive.hpp>// for ScreenInteractive
 #include <spdlog/spdlog.h>
 
-#include <lefticus/tools/non_promoting_ints.hpp>
+// lefticus non-promoting integer types are optional. If the header is
+// available use it, otherwise provide a minimal local fallback so the
+// sample can build without the external dependency.
+#if defined(__has_include)
+#  if __has_include(<lefticus/tools/non_promoting_ints.hpp>)
+#    include <lefticus/tools/non_promoting_ints.hpp>
+#  else
+namespace lefticus { namespace tools {
+struct uint_np8_t {
+  std::uint8_t v = 0;
+  constexpr uint_np8_t(std::uint8_t x = 0) noexcept : v(x) {}
+  constexpr std::uint8_t get() const noexcept { return v; }
+  constexpr uint_np8_t &operator+=(std::uint8_t x) noexcept
+  {
+    v = static_cast<std::uint8_t>(v + x);
+    return *this;
+  }
+  constexpr uint_np8_t &operator++() noexcept
+  {
+    v = static_cast<std::uint8_t>(v + 1);
+    return *this;
+  }
+  constexpr uint_np8_t operator++(int) noexcept
+  {
+    uint_np8_t tmp = *this;
+    v = static_cast<std::uint8_t>(v + 1);
+    return tmp;
+  }
+};
+}} // namespace lefticus::tools
+#  endif
+#endif
 
 // This file will be generated automatically when cur_you run the CMake
 // configuration step. It creates a namespace called `my_lisp`. You can modify
