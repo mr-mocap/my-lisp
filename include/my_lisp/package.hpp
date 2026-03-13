@@ -7,6 +7,8 @@
 #include <algorithm>
 
 
+using OptionalSymbol = std::optional<Symbol>;
+
 class Package
 {
 public:
@@ -15,7 +17,7 @@ public:
     // Converting Constructors
     // Also sink parameters (that's why we take them by value and move them into members)
     Package(String      package_name) : m_name( std::move(package_name) ) {}
-    Package(std::string package_name) : m_name( std::move( text_io::to_utf8_string(package_name) ) ) {}
+    Package(std::string package_name) : m_name( text_io::to_utf8_string(package_name) ) {}
 
     Package(String package_name, SymbolTable sym_table)
         :
@@ -25,14 +27,14 @@ public:
     }
     Package(std::string package_name, SymbolTable sym_table)
         :
-        m_name( std::move( text_io::to_utf8_string(package_name) ) ),
+        m_name( text_io::to_utf8_string(package_name) ),
         m_symbol_table( std::move(sym_table) )
     {
     }
 
     StringView name() const noexcept { return m_name; }
 
-    std::optional<Symbol> find_symbol(StringView symbol_name) const
+    OptionalSymbol find_symbol(StringView symbol_name) const
     {
         return m_symbol_table.find_symbol(symbol_name);
     }
@@ -90,6 +92,21 @@ public:
         if (it != m_shadowing_names.end())
             m_shadowing_names.erase(it);
     }
+
+    const std::vector<String> &uses_packages() const
+    {
+        return m_uses_packages;
+    }
+
+    const std::vector<String> &exported_names() const
+    {
+        return m_exported_names;
+    }
+
+    const std::vector<String> &shadowing_names() const
+    {
+        return m_shadowing_names;
+    }
 protected:
     String              m_name;
     SymbolTable         m_symbol_table;
@@ -97,3 +114,5 @@ protected:
     std::vector<String> m_exported_names;
     std::vector<String> m_shadowing_names;
 };
+
+using PackagePtr = std::shared_ptr<Package>;
