@@ -3,7 +3,6 @@
 #include <my_lisp/lisp_library_export.hpp>
 
 #include <my_lisp/symbol.hpp>
-#include <my_lisp/fundamental_types.hpp>
 #include <string>
 #include <string_view>
 #include <map>
@@ -31,6 +30,14 @@ public:
 
     void unintern(Symbol s) noexcept;
 
+    void import(StringView name, Symbol s)
+    {
+        if ( contains(s) )
+            return; // Already have this symbol, so do nothing
+
+        m_string_to_symbol.emplace( std::make_pair( String(name), s ) );
+    }
+
     [[nodiscard]] StringView get_string(Symbol q) const noexcept;
 
     bool contains(StringView key) const noexcept
@@ -38,10 +45,10 @@ public:
         return m_string_to_symbol.contains(key);
     }
 
-    bool contains(Symbol q) const noexcept
+    bool contains(Symbol s) const noexcept
     {
         for (const auto &[key, value] : m_string_to_symbol) {
-            if (value == q)
+            if (value == s)
                 return true;
         }
         return false;
@@ -65,5 +72,5 @@ public:
     }
 
 protected:
-    std::map<std::u8string, Symbol, SymbolComparator> m_string_to_symbol;
+    std::map<String, Symbol, SymbolComparator> m_string_to_symbol;
 };

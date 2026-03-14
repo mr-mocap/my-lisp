@@ -12,7 +12,7 @@ Symbol GenerateUniqueSymbol()
 }
 }
 
-Symbol SymbolTable::intern(std::u8string_view str) noexcept
+Symbol SymbolTable::intern(StringView str) noexcept
 {
     auto it = m_string_to_symbol.find(str);
 
@@ -20,12 +20,12 @@ Symbol SymbolTable::intern(std::u8string_view str) noexcept
         return it->second;  // We found it!
 
     // Let's insert a new one...
-    auto r = m_string_to_symbol.emplace( std::make_pair( std::u8string(str), GenerateUniqueSymbol() ) );
+    auto r = m_string_to_symbol.emplace( std::make_pair( String(str), GenerateUniqueSymbol() ) );
 
     return r.first->second;
 }
 
-void SymbolTable::intern_with_no_retval(std::u8string_view str) noexcept
+void SymbolTable::intern_with_no_retval(StringView str) noexcept
 {
     auto it = m_string_to_symbol.find(str);
 

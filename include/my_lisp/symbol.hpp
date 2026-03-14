@@ -1,16 +1,16 @@
 #pragma once
 
-#include <my_lisp/lisp_library_export.hpp>
+#include <my_lisp/fundamental_types.hpp>
 
 
-LISP_LIBRARY_EXPORT
 struct Symbol
 {
-  int value = 0;
+  int    value = 0;
+  String home_package;
 
-  constexpr bool operator==(Symbol other) const noexcept
+  bool operator==(Symbol other) const noexcept
   {
-    return value == other.value; 
+    return value == other.value;
   }
 
   // Let the compiler deduce the != operator (C++20 feature)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <my_lisp/lisp_library_export.hpp>
-#include <my_lisp/fundamental_types.hpp>
+#include <my_lisp/sexpression.hpp>
 #include <my_lisp/environment.hpp>
 #include <ostream>
 

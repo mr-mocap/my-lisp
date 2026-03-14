@@ -1,6 +1,5 @@
 #pragma once
 
-#include <my_lisp/fundamental_types.hpp>
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/text_io.hpp>
 #include <vector>
@@ -41,12 +40,21 @@ public:
 
     Symbol intern(StringView symbol_name)
     {
-        return m_symbol_table.intern(symbol_name);
+        Symbol new_symbol = m_symbol_table.intern(symbol_name);
+
+        new_symbol.home_package = name();
+        return new_symbol;
     }
 
     void unintern(Symbol symbol)
     {
         m_symbol_table.unintern(symbol);
+        // TODO: Remove the symbol from exported_names and shadowing_names if it's there
+    }
+
+    void import(StringView name, Symbol s)
+    {
+        m_symbol_table.import(name, s);
     }
 
     bool uses_package(StringView package_name) const
