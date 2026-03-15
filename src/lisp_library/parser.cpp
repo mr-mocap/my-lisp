@@ -7,6 +7,8 @@
 
 using my_lisp::ParseError;
 
+static ParseResult read_expression_impl(Tokenizer &tokenizer);
+
 // Minimal parser that consumes tokens and builds SExpression values.
 // - Symbols are interned via a global SymbolTable instance (simple).
 // - Numbers and booleans are represented as Symbols for now (placeholder)
@@ -31,47 +33,58 @@ static SExpression make_symbol(StringView sv)
     return { .value = s };
 }
 
-static SExpression make_number(StringView sv)
+// Try to parse a numeric literal. On failure return a ParseError instead of
+// silently returning 0.0.
+static ParseResult make_number(StringView sv)
 {
-    SExpression e;
     // Convert u8string_view to std::string for parsing
     std::string bytes = text_io::to_string(sv);
 
-    try {
-        double v = std::stod(bytes);
-        e.value = v;
-    } catch (...) {
-        e.value = 0.0;
+    try
+    {
+        size_t idx = 0;
+        double v = std::stod(bytes, &idx);
+
+        // Ensure the entire token was consumed by the number parser
+        if (idx != bytes.size())
+            return std::unexpected(ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" });
+
+        return ParseResult( SExpression{ .value = v } );
     }
-    return e;
+    catch (...)
+    {
+        return std::unexpected(ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" });
+    }
 }
 
-static SExpression make_boolean(StringView sv)
+static ParseResult make_boolean(StringView sv)
 {
     // sv will be like u8"#t" or u8"#f"
-    return { .value = (!sv.empty() && sv.size() >= 2 && sv[1] == 't') ? true : false };
+    if (sv.size() >= 2 && sv[0] == u8'#')
+    {
+        if ( sv[1] == 't' )
+            return ParseResult( SExpression{ .value = true });
+        else if ( sv[1] == 'f' )
+            return ParseResult( SExpression{ .value = false } );
+    }
+
+    return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid boolean literal" } );
 }
 
-static SExpression make_char(StringView sv)
+static ParseResult make_char(StringView sv)
 {
-    SExpression e;
+    if (sv.empty())
+        return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Empty char literal" } );
 
     // Very simple: take first byte as character. Proper UTF-8 decoding
     // can be added later.
-    if (!sv.empty())
-        e.value = static_cast<char32_t>(sv[0]);
-    else
-        e.value = static_cast<char32_t>(0);
-    return e;
+    return ParseResult( SExpression{ .value = static_cast<char32_t>(sv[0]) } );
 }
 
 static SExpression make_cons(SExpression car, SExpression cdr)
 {
     return { .value = cons( std::move(car), std::move(cdr) ) };
 }
-
-// Forward declaration for the recursive parser helper used by parse_list
-static ParseResult read_expression_impl(Tokenizer &tokenizer);
 
 // Parse the rest of a list given the first token of the first element.
 static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
@@ -104,11 +117,29 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
         case Tokenizer::Type_e::String:
             return ParseResult( make_string(tt.text) );
         case Tokenizer::Type_e::Number:
-            return ParseResult( make_number(tt.text) );
+        {
+            auto num_res = make_number(tt.text);
+
+            if (!num_res)
+                return std::unexpected( num_res.error() );
+            return num_res;
+        }
         case Tokenizer::Type_e::Boolean:
-            return ParseResult( make_boolean(tt.text) );
+        {
+            auto bres = make_boolean(tt.text);
+
+            if (!bres)
+                return std::unexpected( bres.error() );
+            return bres;
+        }
         case Tokenizer::Type_e::Char:
-            return ParseResult( make_char(tt.text) );
+        {
+            auto cres = make_char(tt.text);
+
+            if (!cres)
+                return std::unexpected( cres.error() );
+            return cres;
+        }
         case Tokenizer::Type_e::Quote:
         {
             ParseResult quoted_res = read_expression_impl(tokenizer);
@@ -121,7 +152,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
             return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
         }
         default:
-            return ParseResult( make_nil() );
+            return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position, "Unexpected token while parsing element" } );
         }
     };
 
@@ -168,23 +199,6 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
 }
 
 
-// Forward declaration for use by parse_list and quote handling
-static ParseResult read_expression_impl(Tokenizer &tokenizer);
-
-// Internal helper used by the public read_expression; returns expected
-static ParseResult read_expression_impl(Tokenizer &tokenizer);
-
-ParseResult read_expression(Tokenizer &tokenizer)
-{
-    auto res = read_expression_impl(tokenizer);
-
-    if (!res)
-        return std::unexpected( res.error() );
-
-    return res;
-}
-
-
 static ParseResult read_expression_impl(Tokenizer &tokenizer)
 {
     Tokenizer::Token token = tokenizer.next_token();
@@ -192,7 +206,8 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer)
     switch (token.type)
     {
     case Tokenizer::Type_e::Eof:
-        return ParseResult( make_nil() );
+        // No expression available at top-level: treat as EOF
+        return std::unexpected( ParseError{ ParseError::UnexpectedEOF, token.position, "Unexpected EOF at top-level" } );
     case Tokenizer::Type_e::LeftParen:
     {
         // If next token is RightParen then return empty list (NIL)
@@ -204,8 +219,8 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer)
         return parse_list(tokenizer, next);
     }
     case Tokenizer::Type_e::RightParen:
-        // stray right paren; return nil
-        return ParseResult( make_nil() );
+        // stray right paren — return an explicit parse error instead of NIL
+        return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position, "Stray right parenthesis" } );
     case Tokenizer::Type_e::Symbol:
         return ParseResult( make_symbol(token.text) );
     case Tokenizer::Type_e::String:
@@ -228,6 +243,17 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer)
         return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
     }
     default:
-        return ParseResult( make_nil() );
+        // Unexpected token at top-level
+        return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position, "Unexpected token" } );
     }
+}
+
+ParseResult read_expression(Tokenizer &tokenizer)
+{
+    auto res = read_expression_impl(tokenizer);
+
+    if (!res)
+        return std::unexpected( res.error() );
+
+    return res;
 }
