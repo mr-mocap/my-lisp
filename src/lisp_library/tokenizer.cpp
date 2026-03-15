@@ -1,13 +1,35 @@
 #include <my_lisp/tokenizer.hpp>
-
 #include <cctype>
 #include <string>
+#include <span>
 
 static inline char current_char(const ::String &buf, size_t pos)
 {
     if (pos >= buf.size())
         return '\0';
     return static_cast<char>(buf[pos]);
+}
+
+static inline unsigned char current_char_as_uc(const ::String &buf, size_t pos)
+{
+    if (pos >= buf.size())
+        return '\0';
+    return static_cast<unsigned char>(buf[pos]);
+}
+
+static inline String uppercase_symbol(StringView input)
+{
+    // TODO: FIXME: This only works for ASCII characters. Proper Unicode case folding can be added later.
+    String result;
+
+    result.reserve( input.size() );
+    for ( char8_t c : input )
+    {
+        int uc = std::toupper( static_cast<unsigned char>(c) );
+
+        result.append(1, static_cast<char8_t>(uc));
+    }
+    return result;
 }
 
 Tokenizer::Token Tokenizer::peek()
@@ -42,15 +64,20 @@ Tokenizer::Token Tokenizer::peek()
 }
 
 namespace {
-    bool is_symbol_initial(char c)
-    {
-        return std::isalpha(static_cast<unsigned char>(c)) || std::string("+-*/<=>!?_&%$#@^~").find(c) != std::string::npos;
-    }
 
-    bool is_symbol_subsequent(char c)
-    {
-        return is_symbol_initial(c) || std::isdigit(static_cast<unsigned char>(c)) || c == '.' || c == ':';
-    }
+bool is_symbol_initial(char c)
+{
+    return std::isalpha(static_cast<unsigned char>(c)) ||
+           std::string_view("+-*/<=>!?_&%$#@^~").find(c) != std::string::npos;
+}
+
+bool is_symbol_subsequent(char c)
+{
+    return is_symbol_initial(c) ||
+           std::isdigit(static_cast<unsigned char>(c)) ||
+           c == '.' || c == ':';
+}
+
 }
 
 Tokenizer::Token Tokenizer::next_token()
@@ -78,7 +105,7 @@ Tokenizer::Token Tokenizer::next_token()
             return Token{ Type_e::Eof, StringView(), m_pos };
 
         m_buffer = m_reader.read_line();
-        m_buffer.push_back(static_cast<char8_t>('\n'));
+        m_buffer.push_back( u8'\n' );
         m_pos = 0;
         if (m_reader.eof())
             m_eof = true;
@@ -90,7 +117,7 @@ Tokenizer::Token Tokenizer::next_token()
         if (m_pos >= m_buffer.size())
             return next_token();
 
-        char c = current_char(m_buffer, m_pos);
+        const char c = current_char(m_buffer, m_pos);
 
         if (c == ';')
         {
@@ -117,13 +144,15 @@ Tokenizer::Token Tokenizer::next_token()
     }
 
     size_t token_pos = m_pos;
-    char c = current_char(m_buffer, m_pos);
+    const char          c  = current_char(m_buffer, m_pos);
+    const unsigned char uc = current_char_as_uc(m_buffer, m_pos);
 
     if (c == '(')
     {
         ++m_pos;
         size_t ofs = m_storage.size();
-        m_storage.append(u8"(", 1);
+
+        m_storage.append(1, u8'(');
 
         return Token{ Type_e::LeftParen, StringView(m_storage.data() + ofs, 1), token_pos};
     }
@@ -131,7 +160,8 @@ Tokenizer::Token Tokenizer::next_token()
     {
         ++m_pos;
         size_t ofs = m_storage.size();
-        m_storage.append(u8")", 1);
+
+        m_storage.append(1, u8')');
 
         return Token{ Type_e::RightParen, StringView(m_storage.data() + ofs, 1), token_pos };
     }
@@ -139,15 +169,16 @@ Tokenizer::Token Tokenizer::next_token()
     {
         ++m_pos;
         size_t ofs = m_storage.size();
-        m_storage.append(u8"'", 1);
+
+        m_storage.append(1, u8'\'');
 
         return Token{ Type_e::Quote, StringView(m_storage.data() + ofs, 1), token_pos };
     }
     if (c == '.')
     {
-        char next = current_char(m_buffer, m_pos + 1);
+        unsigned char next = current_char_as_uc(m_buffer, m_pos + 1);
 
-        if (std::isdigit(static_cast<unsigned char>(next)))
+        if ( std::isdigit(next) )
         {
             // fall through to number parsing
         }
@@ -155,7 +186,8 @@ Tokenizer::Token Tokenizer::next_token()
         {
             ++m_pos;
             size_t ofs = m_storage.size();
-            m_storage.append(u8".", 1);
+
+            m_storage.append(1, u8'.');
 
             return Token{ Type_e::Dot, StringView(m_storage.data() + ofs, 1), token_pos };
         }
@@ -177,7 +209,7 @@ Tokenizer::Token Tokenizer::next_token()
 
                 ::String nextline = m_reader.read_line();
 
-                nextline.push_back(static_cast<char8_t>('\n'));
+                nextline.push_back( u8'\n' );
                 m_buffer.append(nextline);
                 continue;
             }
@@ -190,15 +222,15 @@ Tokenizer::Token Tokenizer::next_token()
                 if (m_pos >= m_buffer.size())
                     break;
 
-                char esc = current_char(m_buffer, m_pos);
+                const char esc = current_char(m_buffer, m_pos);
 
                 ++m_pos;
                 switch (esc)
                 {
-                case 'n': accum.push_back(static_cast<char8_t>('\n')); break;
-                case 't': accum.push_back(static_cast<char8_t>('\t')); break;
-                case '\\': accum.push_back(static_cast<char8_t>('\\')); break;
-                case '"': accum.push_back(static_cast<char8_t>('"')); break;
+                case 'n': accum.push_back( u8'\n' ); break;
+                case 't': accum.push_back( u8'\t' ); break;
+                case '\\': accum.push_back( u8'\\' ); break;
+                case '"': accum.push_back( u8'"' ); break;
                 default:
                     accum.push_back(static_cast<char8_t>(esc));
                     break;
@@ -226,13 +258,14 @@ Tokenizer::Token Tokenizer::next_token()
     // Booleans and chars
     if (c == '#')
     {
-        char next = current_char(m_buffer, m_pos + 1);
+        const char next = current_char(m_buffer, m_pos + 1);
 
         if (next == 't' || next == 'f')
         {
             m_pos += 2;
             size_t ofs = m_storage.size();
-            m_storage.append(u8"#", 1);
+
+            m_storage.append(1, u8'#');
             m_storage.append(reinterpret_cast<const char8_t *>(&next), 1);
 
             return Token{ Type_e::Boolean, StringView(m_storage.data() + ofs, 2), token_pos };
@@ -243,8 +276,6 @@ Tokenizer::Token Tokenizer::next_token()
 
             if (p < m_buffer.size())
             {
-                [[maybe_unused]] char ch = current_char(m_buffer, p);
-                
                 ++p;
                 size_t ofs = m_storage.size();
 
@@ -257,46 +288,46 @@ Tokenizer::Token Tokenizer::next_token()
     }
 
     // Numbers
-    if (c == '+' || c == '-' || std::isdigit(static_cast<unsigned char>(c)) || (c == '.' && std::isdigit(static_cast<unsigned char>(current_char(m_buffer, m_pos+1)))))
+    if (c == '+' || c == '-' || std::isdigit(uc) || (c == '.' && std::isdigit(current_char_as_uc(m_buffer, m_pos+1))))
     {
         size_t start = m_pos;
 
         if (c == '+' || c == '-')
             ++m_pos;
 
-        while (std::isdigit(static_cast<unsigned char>(current_char(m_buffer, m_pos))))
+        while ( std::isdigit( current_char_as_uc(m_buffer, m_pos) ) )
             ++m_pos;
 
         if (current_char(m_buffer, m_pos) == '.')
         {
             ++m_pos;
-            while (std::isdigit(static_cast<unsigned char>(current_char(m_buffer, m_pos))))
+            while ( std::isdigit( current_char_as_uc(m_buffer, m_pos) ) )
                 ++m_pos;
         }
 
         size_t len = m_pos - start;
         size_t ofs = m_storage.size();
 
-        m_storage.append(reinterpret_cast<const char8_t *>(m_buffer.data() + start), len);
+        m_storage.append(m_buffer.data() + start, len);
 
-        StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), len);
-
-        return Token{ Type_e::Number, sv, token_pos };
+        return Token{ Type_e::Number, StringView(m_storage.data() + ofs, len), token_pos };
     }
 
     // Symbol
-    if (is_symbol_initial(c))
+    if ( is_symbol_initial(c) )
     {
         size_t start = m_pos;
 
         ++m_pos;
-        while (is_symbol_subsequent(current_char(m_buffer, m_pos)))
+        while ( is_symbol_subsequent( current_char(m_buffer, m_pos) ) )
             ++m_pos;
 
         size_t len = m_pos - start;
         size_t ofs = m_storage.size();
 
-        m_storage.append(m_buffer.data() + start, len);
+        ::String uppercased_symbol = uppercase_symbol( StringView(m_buffer.data() + start, len) );
+
+        m_storage.append( uppercased_symbol );
 
         return Token{ Type_e::Symbol, StringView(m_storage.data() + ofs, len), token_pos };
     }

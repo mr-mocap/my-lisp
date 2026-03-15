@@ -45,7 +45,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         Tokenizer::Token token = tokenizer.next_token();
 
         REQUIRE(token.type == Tokenizer::Type_e::Symbol);
-        REQUIRE(token.text == u8"symbol");
+        REQUIRE(token.text == u8"SYMBOL");
         REQUIRE(token.position == 0);
     }
     SECTION("Number")
