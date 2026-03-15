@@ -65,7 +65,7 @@ catch_discover_tests(
   .xml)
 
 # Add a file containing a set of constexpr tests
-add_executable(conversions_tests  environment_tests.cpp "packagecollection_tests.cpp" "tokenizer_tests.cpp")
+add_executable(conversions_tests  environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp)
 target_link_libraries(
   conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
@@ -90,7 +90,7 @@ catch_discover_tests(
 
 # Disable the constexpr portion of the test, and build again this allows us to have an executable that we can debug when
 # things go wrong with the constexpr testing
-add_executable(relaxed_conversions_tests  "environment_tests.cpp" "packagecollection_tests.cpp" "tokenizer_tests.cpp")
+add_executable(relaxed_conversions_tests  environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp)
 target_link_libraries(
   relaxed_conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
@@ -114,3 +114,21 @@ catch_discover_tests(
   "relaxed_conversions."
   OUTPUT_SUFFIX
   .xml)
+
+add_executable(test_parser test_parser.cpp)
+target_link_libraries(
+  test_parser
+  PRIVATE my_lisp::my_lisp_warnings
+          my_lisp::my_lisp_options
+          my_lisp::lisp_library
+          Catch2::Catch2WithMain)
+
+my_lisp_configure_linker(test_parser)
+
+if(WIN32 AND BUILD_SHARED_LIBS)
+  add_custom_command(
+    TARGET test_parser
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:test_parser> $<TARGET_FILE_DIR:test_parser>
+    COMMAND_EXPAND_LISTS)
+endif()
