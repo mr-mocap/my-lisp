@@ -31,7 +31,7 @@ add_test(NAME cli.has_help COMMAND intro --help)
 add_test(NAME cli.version_matches COMMAND intro --version)
 set_tests_properties(cli.version_matches PROPERTIES PASS_REGULAR_EXPRESSION "${PROJECT_VERSION}")
 
-add_executable(tests tests.cpp package_tests.cpp symboltable_tests.cpp environment_tests.cpp packagecollection_tests.cpp)
+add_executable(tests tests.cpp package_tests.cpp symboltable_tests.cpp environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp)
 target_link_libraries(
   tests
   PRIVATE my_lisp::my_lisp_warnings
@@ -65,7 +65,7 @@ catch_discover_tests(
   .xml)
 
 # Add a file containing a set of constexpr tests
-add_executable(conversions_tests  environment_tests.cpp "packagecollection_tests.cpp")
+add_executable(conversions_tests  environment_tests.cpp "packagecollection_tests.cpp" "tokenizer_tests.cpp")
 target_link_libraries(
   conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
@@ -90,7 +90,7 @@ catch_discover_tests(
 
 # Disable the constexpr portion of the test, and build again this allows us to have an executable that we can debug when
 # things go wrong with the constexpr testing
-add_executable(relaxed_conversions_tests  "environment_tests.cpp" "packagecollection_tests.cpp")
+add_executable(relaxed_conversions_tests  "environment_tests.cpp" "packagecollection_tests.cpp" "tokenizer_tests.cpp")
 target_link_libraries(
   relaxed_conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
