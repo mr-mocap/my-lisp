@@ -1,0 +1,115 @@
+#include <catch2/catch_test_macros.hpp>
+#include <my_lisp/lisp_library.hpp>
+#include <sstream>
+
+using namespace std::string_literals;
+
+TEST_CASE("read_expression parses symbols and strings", "[Parser]")
+{
+    SECTION("Symbol")
+    {
+        std::istringstream iss("symbol");
+        Reader reader(iss);
+        Tokenizer tokenizer(reader);
+
+        SExpression e = read_expression(tokenizer);
+
+        REQUIRE(e.type() == SExpression::Symbol);
+    }
+
+    SECTION("String")
+    {
+        std::istringstream iss("\"hello\"");
+        Reader reader(iss);
+        Tokenizer tokenizer(reader);
+
+        SExpression e = read_expression(tokenizer);
+
+        REQUIRE(e.type() == SExpression::String);
+        REQUIRE(e.asString() == u8"hello");
+    }
+}
+
+TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
+{
+    SECTION("Empty list")
+    {
+        std::istringstream iss("()");
+        Reader reader(iss);
+        Tokenizer tokenizer(reader);
+
+        SExpression e = read_expression(tokenizer);
+
+        REQUIRE(e.type() == SExpression::Nil);
+    }
+
+    SECTION("Simple list")
+    {
+        std::istringstream iss("(a b)");
+        Reader reader(iss);
+        Tokenizer tokenizer(reader);
+
+        SExpression e = read_expression(tokenizer);
+
+        REQUIRE(e.type() == SExpression::ConsCell);
+        auto cell = e.asConsCellPtr();
+        REQUIRE(cell != nullptr);
+        REQUIRE(cell->car.type() == SExpression::Symbol);
+        REQUIRE(cell->cdr.type() == SExpression::ConsCell);
+
+        auto cell2 = cell->cdr.asConsCellPtr();
+        REQUIRE(cell2->car.type() == SExpression::Symbol);
+        REQUIRE(cell2->cdr.type() == SExpression::Nil);
+    }
+
+    SECTION("Dotted pair")
+    {
+        std::istringstream iss("(a . b)");
+        Reader reader(iss);
+        Tokenizer tokenizer(reader);
+
+        SExpression e = read_expression(tokenizer);
+
+        REQUIRE(e.type() == SExpression::ConsCell);
+        auto cell = e.asConsCellPtr();
+        REQUIRE(cell->car.type() == SExpression::Symbol);
+        // cdr should be a symbol 'b'
+        REQUIRE(cell->cdr.type() == SExpression::Symbol);
+    }
+
+    SECTION("Nested list")
+    {
+        std::istringstream iss("(a (b c))");
+        Reader reader(iss);
+        Tokenizer tokenizer(reader);
+
+        SExpression e = read_expression(tokenizer);
+
+        REQUIRE(e.type() == SExpression::ConsCell);
+        auto cell = e.asConsCellPtr();
+        REQUIRE(cell->car.type() == SExpression::Symbol);
+        REQUIRE(cell->cdr.type() == SExpression::ConsCell);
+
+        auto rest = cell->cdr.asConsCellPtr();
+        REQUIRE(rest->car.type() == SExpression::ConsCell);
+        auto inner = rest->car.asConsCellPtr();
+        REQUIRE(inner->car.type() == SExpression::Symbol);
+    }
+}
+
+TEST_CASE("read_expression handles quote", "[Parser]")
+{
+    std::istringstream iss("'x");
+    Reader reader(iss);
+    Tokenizer tokenizer(reader);
+
+    SExpression e = read_expression(tokenizer);
+
+    REQUIRE(e.type() == SExpression::ConsCell);
+    auto cell = e.asConsCellPtr();
+    REQUIRE(cell->car.type() == SExpression::Symbol); // quote symbol
+    REQUIRE(cell->cdr.type() == SExpression::ConsCell);
+    auto tail = cell->cdr.asConsCellPtr();
+    REQUIRE(tail->car.type() == SExpression::Symbol); // quoted symbol x
+    REQUIRE(tail->cdr.type() == SExpression::Nil);
+}

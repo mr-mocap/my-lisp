@@ -31,7 +31,7 @@ add_test(NAME cli.has_help COMMAND intro --help)
 add_test(NAME cli.version_matches COMMAND intro --version)
 set_tests_properties(cli.version_matches PROPERTIES PASS_REGULAR_EXPRESSION "${PROJECT_VERSION}")
 
-add_executable(tests tests.cpp package_tests.cpp symboltable_tests.cpp environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp)
+add_executable(tests tests.cpp package_tests.cpp symboltable_tests.cpp environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp parser_tests.cpp)
 target_link_libraries(
   tests
   PRIVATE my_lisp::my_lisp_warnings

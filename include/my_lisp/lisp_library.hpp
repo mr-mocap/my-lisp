@@ -12,5 +12,6 @@
 #include <my_lisp/packagecollection.hpp>
 #include <my_lisp/reader.hpp>
 #include <my_lisp/tokenizer.hpp>
+#include <my_lisp/parser.hpp>
 
 //[[nodiscard]] LISP_LIBRARY_EXPORT int factorial(int) noexcept;

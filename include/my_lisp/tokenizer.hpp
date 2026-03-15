@@ -43,6 +43,10 @@ public:
     // will be returned.
     Token next_token();
 
+    // Peek the next token without consuming it. Subsequent call to
+    // `next_token()` will return the same token.
+    Token peek();
+
 protected:
     Reader &m_reader;
 
@@ -51,7 +55,16 @@ protected:
     size_t   m_pos = 0;
     bool     m_eof = false;
     bool     m_read_attempted = false;
+
     // Persistent storage for token text to ensure StringView remains valid
     // after m_buffer is replaced.
     ::String m_storage;
+
+    // Peek cache
+    bool     m_has_peek = false;
+    Token    m_peek_token;
+    ::String m_peek_buffer;
+    size_t   m_peek_pos = 0;
+    bool     m_peek_eof = false;
+    ::String m_peek_storage;
 };

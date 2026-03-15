@@ -10,6 +10,37 @@ static inline char current_char(const ::String &buf, size_t pos)
     return static_cast<char>(buf[pos]);
 }
 
+Tokenizer::Token Tokenizer::peek()
+{
+    if (m_has_peek)
+        return m_peek_token;
+
+    // Save current state
+    ::String old_buffer = m_buffer;
+    size_t old_pos = m_pos;
+    bool old_eof = m_eof;
+    ::String old_storage = m_storage;
+
+    // Consume a token to advance internal state
+    Token t = next_token();
+
+    // Save the advanced state into peek storage
+    m_peek_token = t;
+    m_peek_buffer = m_buffer;
+    m_peek_pos = m_pos;
+    m_peek_eof = m_eof;
+    m_peek_storage = m_storage;
+    m_has_peek = true;
+
+    // Restore original state so token remains unconsumed
+    m_buffer = std::move(old_buffer);
+    m_pos = old_pos;
+    m_eof = old_eof;
+    m_storage = std::move(old_storage);
+
+    return m_peek_token;
+}
+
 namespace {
     bool is_symbol_initial(char c)
     {
@@ -24,6 +55,19 @@ namespace {
 
 Tokenizer::Token Tokenizer::next_token()
 {
+    if (m_has_peek)
+    {
+        m_has_peek = false;
+        // move peeked token into return value and restore internal buffers
+        Token t = m_peek_token;
+
+        m_storage = std::move(m_peek_storage);
+        m_buffer = std::move(m_peek_buffer);
+        m_pos = m_peek_pos;
+        m_eof = m_peek_eof;
+        return t;
+    }
+
     // Ensure buffer has data or try to read a line
     for (;;)
     {
@@ -50,13 +94,14 @@ Tokenizer::Token Tokenizer::next_token()
 
         if (c == ';')
         {
+            // Capture comment from ';' to end of line (excluding the newline)
             size_t ofs = m_storage.size();
             size_t comment_start = m_pos;
 
             // Comment: skip to end of line
             while ( m_pos < m_buffer.size() && current_char(m_buffer, m_pos) != '\n' )
                 ++m_pos;
-            
+
             m_storage.append( StringView(m_buffer.data() + ofs, m_pos - comment_start) );
 
             return Token{ Type_e::Comment, StringView(m_storage.data() + ofs, m_storage.size()), comment_start};
