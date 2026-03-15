@@ -8,9 +8,10 @@ TEST_CASE("unterminated list returns NIL", "[Parser][Edge]")
     Reader reader(iss);
     Tokenizer tokenizer(reader);
 
-    SExpression e = read_expression(tokenizer);
-
-    REQUIRE(e.type() == SExpression::Nil);
+    auto res = read_expression(tokenizer);
+    REQUIRE(!res.has_value());
+    auto err = res.error();
+    REQUIRE(err.kind == my_lisp::ParseError::UnterminatedList);
 }
 
 TEST_CASE("malformed dotted pair returns NIL", "[Parser][Edge]")
@@ -19,7 +20,8 @@ TEST_CASE("malformed dotted pair returns NIL", "[Parser][Edge]")
     Reader reader(iss);
     Tokenizer tokenizer(reader);
 
-    SExpression e = read_expression(tokenizer);
-
-    REQUIRE(e.type() == SExpression::Nil);
+    auto res2 = read_expression(tokenizer);
+    REQUIRE(!res2.has_value());
+    auto err2 = res2.error();
+    REQUIRE(err2.kind == my_lisp::ParseError::MalformedDottedPair);
 }

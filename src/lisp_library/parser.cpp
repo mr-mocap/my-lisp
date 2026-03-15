@@ -3,6 +3,9 @@
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/text_io.hpp>
 #include <functional>
+#include <expected>
+
+using my_lisp::ParseError;
 
 // Minimal parser that consumes tokens and builds SExpression values.
 // - Symbols are interned via a global SymbolTable instance (simple).
@@ -67,132 +70,164 @@ static SExpression make_cons(SExpression car, SExpression cdr)
     return { .value = cons( std::move(car), std::move(cdr) ) };
 }
 
+// Forward declaration for the recursive parser helper used by parse_list
+static ParseResult read_expression_impl(Tokenizer &tokenizer);
+
 // Parse the rest of a list given the first token of the first element.
-static SExpression parse_list(Tokenizer &tokenizer, Tokenizer::Token t, bool &error)
+static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
 {
-    // If we were handed an EOF token, treat as malformed and return NIL.
+    // If we were handed an EOF token, treat as malformed and return error.
     if (t.type == Tokenizer::Type_e::Eof)
     {
-        error = true;
-        return make_nil();
+        return std::unexpected( ParseError{ ParseError::UnterminatedList, t.position, "Unexpected EOF while starting list" } );
     }
 
     // Helper to construct an element from a token
-    auto make_element_from_token = [&](Tokenizer::Token tt) -> SExpression {
+    auto make_element_from_token = [&](Tokenizer::Token tt) -> std::expected<SExpression, ParseError> {
         if (tt.type == Tokenizer::Type_e::Eof)
         {
-            error = true;
-            return make_nil();
+            return std::unexpected( ParseError{ ParseError::UnexpectedEOF, tt.position, "Unexpected EOF while parsing element" } );
         }
         switch (tt.type)
         {
-            case Tokenizer::Type_e::LeftParen:
+        case Tokenizer::Type_e::LeftParen:
         {
             // Next token is first element of nested list (or RightParen)
                 Tokenizer::Token nested_first = tokenizer.next_token();
 
                 if (nested_first.type == Tokenizer::Type_e::RightParen)
-                    return make_nil();
-                return parse_list(tokenizer, nested_first, error);
+                    return ParseResult( make_nil() );
+                return parse_list(tokenizer, nested_first);
         }
         case Tokenizer::Type_e::Symbol:
-            return make_symbol(tt.text);
+            return ParseResult( make_symbol(tt.text) );
         case Tokenizer::Type_e::String:
-            return make_string(tt.text);
+            return ParseResult( make_string(tt.text) );
         case Tokenizer::Type_e::Number:
-            return make_number(tt.text);
+            return ParseResult( make_number(tt.text) );
         case Tokenizer::Type_e::Boolean:
-            return make_boolean(tt.text);
+            return ParseResult( make_boolean(tt.text) );
         case Tokenizer::Type_e::Char:
-            return make_char(tt.text);
+            return ParseResult( make_char(tt.text) );
         case Tokenizer::Type_e::Quote:
         {
-            SExpression quoted = read_expression(tokenizer);
+            ParseResult quoted_res = read_expression_impl(tokenizer);
+
+            if (!quoted_res)
+                return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position, "Unexpected token after quote" } );
+
             SExpression qsym = make_symbol(u8"quote");
 
-            return make_cons(qsym, make_cons(quoted, make_nil()));
+            return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
         }
         default:
-            return make_nil();
+            return ParseResult( make_nil() );
         }
     };
 
-    SExpression head = make_element_from_token(t);
-    auto next = tokenizer.next_token();
+    auto head_res = make_element_from_token(t);
+
+    if (!head_res)
+        return std::unexpected( head_res.error() );
+
+    SExpression head = head_res.value();
+    Tokenizer::Token next = tokenizer.next_token();
 
     // If we hit EOF while parsing the list, treat as malformed/unterminated
-    // and return NIL.
+    // and return error.
     if (next.type == Tokenizer::Type_e::Eof)
     {
-        error = true;
-        return make_nil();
+        return std::unexpected( ParseError{ ParseError::UnterminatedList, next.position, "Unexpected EOF while parsing list" } );
     }
 
     if (next.type == Tokenizer::Type_e::RightParen)
     {
-        return make_cons(head, make_nil());
+        return ParseResult( make_cons( head, make_nil() ) );
     }
     if (next.type == Tokenizer::Type_e::Dot)
     {
-        SExpression cdr = read_expression(tokenizer);
+        auto cdr_res = read_expression_impl(tokenizer);
+
+        if (!cdr_res)
+            return std::unexpected( ParseError{ ParseError::MalformedDottedPair, next.position, "Missing cdr after dot" } );
+
         auto closing = tokenizer.next_token();
 
         if (closing.type != Tokenizer::Type_e::RightParen)
-            return make_nil();
-        return make_cons(head, cdr);
+            return std::unexpected( ParseError{ ParseError::MalformedDottedPair, closing.position, "Missing closing parenthesis after dotted pair" } );
+
+        return ParseResult( make_cons( head, cdr_res.value() ) );
     }
 
-    SExpression rest = parse_list(tokenizer, next, error);
+    auto rest_res = parse_list(tokenizer, next);
 
-    return make_cons(head, rest);
+    if (!rest_res)
+        return std::unexpected( rest_res.error() );
+
+    return ParseResult( make_cons( head, rest_res.value() ) );
 }
 
 
-SExpression read_expression(Tokenizer &tokenizer)
+// Forward declaration for use by parse_list and quote handling
+static ParseResult read_expression_impl(Tokenizer &tokenizer);
+
+// Internal helper used by the public read_expression; returns expected
+static ParseResult read_expression_impl(Tokenizer &tokenizer);
+
+ParseResult read_expression(Tokenizer &tokenizer)
+{
+    auto res = read_expression_impl(tokenizer);
+
+    if (!res)
+        return std::unexpected( res.error() );
+
+    return res;
+}
+
+
+static ParseResult read_expression_impl(Tokenizer &tokenizer)
 {
     Tokenizer::Token token = tokenizer.next_token();
 
     switch (token.type)
     {
     case Tokenizer::Type_e::Eof:
-        return make_nil();
+        return ParseResult( make_nil() );
     case Tokenizer::Type_e::LeftParen:
     {
         // If next token is RightParen then return empty list (NIL)
-        auto next = tokenizer.next_token();
+        Tokenizer::Token next = tokenizer.next_token();
 
         if (next.type == Tokenizer::Type_e::RightParen)
-            return make_nil();
+            return ParseResult( make_nil() );
 
-        bool error = false;
-        SExpression result = parse_list(tokenizer, next, error);
-
-        if (error)
-            return make_nil();
-        return result;
+        return parse_list(tokenizer, next);
     }
     case Tokenizer::Type_e::RightParen:
         // stray right paren; return nil
-        return make_nil();
+        return ParseResult( make_nil() );
     case Tokenizer::Type_e::Symbol:
-        return make_symbol(token.text);
+        return ParseResult( make_symbol(token.text) );
     case Tokenizer::Type_e::String:
-        return make_string(token.text);
+        return ParseResult( make_string(token.text) );
     case Tokenizer::Type_e::Number:
-        return make_number(token.text);
+        return ParseResult( make_number(token.text) );
     case Tokenizer::Type_e::Boolean:
-        return make_boolean(token.text);
+        return ParseResult( make_boolean(token.text) );
     case Tokenizer::Type_e::Char:
-        return make_char(token.text);
+        return ParseResult( make_char(token.text) );
     case Tokenizer::Type_e::Quote:
     {
-        SExpression quoted = read_expression(tokenizer);
-        SExpression qsym = make_symbol(u8"quote");
-        SExpression list = make_cons(qsym, make_cons(quoted, make_nil()));
+        ParseResult quoted_res = read_expression_impl(tokenizer);
 
-        return list;
+        if (!quoted_res)
+            return std::unexpected( quoted_res.error() );
+
+        SExpression qsym = make_symbol(u8"quote");
+
+        return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
     }
     default:
-        return make_nil();
+        return ParseResult( make_nil() );
     }
 }

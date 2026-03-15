@@ -12,7 +12,9 @@ TEST_CASE("read_expression parses symbols and strings", "[Parser]")
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        SExpression e = read_expression(tokenizer);
+        auto res = read_expression(tokenizer);
+        REQUIRE(res.has_value());
+        SExpression e = res.value();
 
         REQUIRE(e.type() == SExpression::Symbol);
     }
@@ -23,7 +25,9 @@ TEST_CASE("read_expression parses symbols and strings", "[Parser]")
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        SExpression e = read_expression(tokenizer);
+        auto res = read_expression(tokenizer);
+        REQUIRE(res.has_value());
+        SExpression e = res.value();
 
         REQUIRE(e.type() == SExpression::String);
         REQUIRE(e.asString() == u8"hello");
@@ -38,7 +42,9 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        SExpression e = read_expression(tokenizer);
+        auto res = read_expression(tokenizer);
+        REQUIRE(res.has_value());
+        SExpression e = res.value();
 
         REQUIRE(e.type() == SExpression::Nil);
     }
@@ -49,7 +55,9 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        SExpression e = read_expression(tokenizer);
+        auto res = read_expression(tokenizer);
+        REQUIRE(res.has_value());
+        SExpression e = res.value();
 
         REQUIRE(e.type() == SExpression::ConsCell);
         auto cell = e.asConsCellPtr();
@@ -68,7 +76,9 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        SExpression e = read_expression(tokenizer);
+        auto res = read_expression(tokenizer);
+        REQUIRE(res.has_value());
+        SExpression e = res.value();
 
         REQUIRE(e.type() == SExpression::ConsCell);
         auto cell = e.asConsCellPtr();
@@ -83,7 +93,9 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        SExpression e = read_expression(tokenizer);
+        auto res = read_expression(tokenizer);
+        REQUIRE(res.has_value());
+        SExpression e = res.value();
 
         REQUIRE(e.type() == SExpression::ConsCell);
 
@@ -116,10 +128,12 @@ TEST_CASE("read_expression handles quote", "[Parser]")
     Reader reader(iss);
     Tokenizer tokenizer(reader);
 
-    SExpression e = read_expression(tokenizer);
+        auto res = read_expression(tokenizer);
+        REQUIRE(res.has_value());
+        SExpression e = res.value();
 
-    REQUIRE(e.type() == SExpression::ConsCell);
-    auto cell = e.asConsCellPtr();
+        REQUIRE(e.type() == SExpression::ConsCell);
+        auto cell = e.asConsCellPtr();
     REQUIRE(cell->car.type() == SExpression::Symbol); // quote symbol
     REQUIRE(cell->cdr.type() == SExpression::ConsCell);
     auto tail = cell->cdr.asConsCellPtr();
