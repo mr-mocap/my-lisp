@@ -86,14 +86,27 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         SExpression e = read_expression(tokenizer);
 
         REQUIRE(e.type() == SExpression::ConsCell);
+
         auto cell = e.asConsCellPtr();
+
+        // Symbol for "a"
         REQUIRE(cell->car.type() == SExpression::Symbol);
-        REQUIRE(cell->cdr.type() == SExpression::ConsCell);
+        REQUIRE(cell->cdr.type() == SExpression::ConsCell); // next cell for "(b c)"
 
         auto rest = cell->cdr.asConsCellPtr();
-        REQUIRE(rest->car.type() == SExpression::ConsCell);
+
+        REQUIRE(rest->car.type() == SExpression::ConsCell); // "(b c)"
+        REQUIRE(rest->cdr.type() == SExpression::Nil);
+
         auto inner = rest->car.asConsCellPtr();
-        REQUIRE(inner->car.type() == SExpression::Symbol);
+
+        REQUIRE(inner->car.type() == SExpression::Symbol); // "b"
+        REQUIRE(inner->cdr.type() == SExpression::ConsCell);
+
+        auto inner_rest = inner->cdr.asConsCellPtr();
+
+        REQUIRE(inner_rest->car.type() == SExpression::Symbol); // "c"
+        REQUIRE(inner_rest->cdr.type() == SExpression::Nil);
     }
 }
 

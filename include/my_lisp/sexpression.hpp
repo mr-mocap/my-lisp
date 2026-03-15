@@ -13,10 +13,13 @@ struct SExpression
         Nil,
         String,
         Symbol,
+        Number,
+        Boolean,
+        Char,
         ConsCell
     };
 
-    std::variant<::Nil, ::String, ::Symbol, ::ConsCellPtr> value;
+    std::variant<::Nil, ::String, ::Symbol, double, bool, char32_t, ::ConsCellPtr> value;
 
     constexpr Type type() const
     {
@@ -36,6 +39,21 @@ struct SExpression
     constexpr ::Symbol asSymbol()
     {
         return std::get<::Symbol>(value);
+    }
+
+    constexpr double asNumber()
+    {
+        return std::get<double>(value);
+    }
+
+    constexpr bool asBoolean()
+    {
+        return std::get<bool>(value);
+    }
+
+    constexpr char32_t asChar()
+    {
+        return std::get<char32_t>(value);
     }
 
     ::ConsCellPtr asConsCellPtr()

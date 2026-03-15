@@ -125,9 +125,7 @@ Tokenizer::Token Tokenizer::next_token()
         size_t ofs = m_storage.size();
         m_storage.append(u8"(", 1);
 
-        StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), 1);
-
-        return Token{ Type_e::LeftParen, sv, token_pos };
+        return Token{ Type_e::LeftParen, StringView(m_storage.data() + ofs, 1), token_pos};
     }
     if (c == ')')
     {
@@ -135,9 +133,7 @@ Tokenizer::Token Tokenizer::next_token()
         size_t ofs = m_storage.size();
         m_storage.append(u8")", 1);
 
-        StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), 1);
-
-        return Token{ Type_e::RightParen, sv, token_pos };
+        return Token{ Type_e::RightParen, StringView(m_storage.data() + ofs, 1), token_pos };
     }
     if (c == '\'')
     {
@@ -145,9 +141,7 @@ Tokenizer::Token Tokenizer::next_token()
         size_t ofs = m_storage.size();
         m_storage.append(u8"'", 1);
 
-        StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), 1);
-
-        return Token{ Type_e::Quote, sv, token_pos };
+        return Token{ Type_e::Quote, StringView(m_storage.data() + ofs, 1), token_pos };
     }
     if (c == '.')
     {
@@ -163,9 +157,7 @@ Tokenizer::Token Tokenizer::next_token()
             size_t ofs = m_storage.size();
             m_storage.append(u8".", 1);
 
-            StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), 1);
-
-            return Token{ Type_e::Dot, sv, token_pos };
+            return Token{ Type_e::Dot, StringView(m_storage.data() + ofs, 1), token_pos };
         }
     }
 
@@ -228,9 +220,7 @@ Tokenizer::Token Tokenizer::next_token()
         size_t ofs = m_storage.size();
         m_storage.append(accum);
 
-        StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), accum.size());
-
-        return Token{ Type_e::String, sv, token_pos };
+        return Token{ Type_e::String, StringView(m_storage.data() + ofs, accum.size()), token_pos };
     }
 
     // Booleans and chars
@@ -245,9 +235,7 @@ Tokenizer::Token Tokenizer::next_token()
             m_storage.append(u8"#", 1);
             m_storage.append(reinterpret_cast<const char8_t *>(&next), 1);
 
-            StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), 2);
-
-            return Token{ Type_e::Boolean, sv, token_pos };
+            return Token{ Type_e::Boolean, StringView(m_storage.data() + ofs, 2), token_pos };
         }
         if (next == '\\')
         {
@@ -308,11 +296,9 @@ Tokenizer::Token Tokenizer::next_token()
         size_t len = m_pos - start;
         size_t ofs = m_storage.size();
 
-        m_storage.append(reinterpret_cast<const char8_t *>(m_buffer.data() + start), len);
+        m_storage.append(m_buffer.data() + start, len);
 
-        StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), len);
-
-        return Token{ Type_e::Symbol, sv, token_pos };
+        return Token{ Type_e::Symbol, StringView(m_storage.data() + ofs, len), token_pos };
     }
 
     // Fallback: treat unknown single byte as symbol
@@ -320,9 +306,7 @@ Tokenizer::Token Tokenizer::next_token()
 
     size_t ofs = m_storage.size();
 
-    m_storage.append(reinterpret_cast<const char8_t *>(m_buffer.data() + token_pos), 1);
+    m_storage.append(m_buffer.data() + token_pos, 1);
 
-    StringView sv(reinterpret_cast<const char8_t *>(m_storage.data() + ofs), 1);
-
-    return Token{ Type_e::Symbol, sv, token_pos };
+    return Token{ Type_e::Symbol, StringView(m_storage.data() + ofs, 1), token_pos };
 }

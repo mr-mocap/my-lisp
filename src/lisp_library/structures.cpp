@@ -1,5 +1,6 @@
 #include <my_lisp/structures.hpp>
 #include <my_lisp/text_io.hpp>
+#include <format>
 
 
 void print(const SExpression &expr, std::ostream &output)
@@ -9,22 +10,36 @@ void print(const SExpression &expr, std::ostream &output)
 
         void operator()(Nil) const
         {
-            output << text_io::to_string_view( u8"NIL" );
+            output << "NIL";
         }
         void operator()(const String &s) const
         {
-            output << text_io::to_string_view( u8"\"" );
-            output << text_io::to_string_view( s );
-            output << text_io::to_string_view( u8"\"" );
+            output << std::format("\"{}\"", text_io::to_string_view(s));
+        }
+        void operator()(double d) const
+        {
+            // simple number printing
+            std::string s = std::to_string(d);
+
+            output << s;
+        }
+        void operator()(bool b) const
+        {
+            output << (b) ? "#t" : "#f";
+        }
+        void operator()(char32_t c) const
+        {
+            // naive conversion of codepoint to utf-8 bytes is not implemented;
+            // print as numeric value for now
+            output << static_cast<int>(c);
         }
         void operator()(Symbol) const
         {
-            //write_stdout_utf8( sym.name );
-            output << text_io::to_string_view( u8"NOT IMPLEMENTED" );
+            output << "NOT IMPLEMENTED";
         }
         void operator()(const ConsCellPtr &) const
         {
-            output << text_io::to_string_view( u8"NOT IMPLEMENTED" );
+            output << "NOT IMPLEMENTED";
         }
 
         std::ostream &output;
@@ -33,105 +48,6 @@ void print(const SExpression &expr, std::ostream &output)
     std::visit( Visitor( output ), expr.value );
 }
 
-
-#if 0
-                text_io::write_stdout_utf8( u8"(" );
-
-                if ( cell->car)
-                {
-
-                }
-                text_io::write_stdout_utf8( u8")" );
-                print( cell->car );
-
-                const SExpression &cdr = cell->cdr;
-
-                std::visit(
-                    Visitor{
-                        [](ConsCellPtr cell)
-                        {
-                            write_stdout_utf8(u8" ");
-                            print(cell->car);
-                        }
-                    },
-                cdr);
-                if ( !std::holds_alternative<Nil>(cdr.value) )
-                {
-                    write_stdout_utf8(u8" . ");
-                    print(cdr);
-                }
-                write_stdout_utf8(u8")");
-#endif
-
-#if 0
-void print(const SExpression &expr)
-{
-    std::visit(
-        Visitor{
-            [](Nil t) { write_stdout_utf8( u8"NIL" ); },
-            [](ConsCellPtr cell) {
-                write_stdout_utf8( u8"(" );
-                print( cell->car );
-                const SExpression &cdr = cell->cdr;
-
-                while ( std::holds_alternative<ConsCellPtr>(cdr.value) )
-                {
-                    ConsCellPtr cell = std::get<ConsCellPtr>(cdr.value);
-
-                    write_stdout_utf8( u8" " );
-                    print( cell->car );
-                    cdr = cell->cdr;
-                }
-                if ( !std::holds_alternative<Nil>(cdr.value) )
-                {
-                    write_stdout_utf8( u8" . " );
-                    print( cdr );
-                }
-                write_stdout_utf8( u8")" );
-                                 }
-               }
-        [](const auto &value) {
-            using T = std::decay_t<decltype(value)>;
-
-            if constexpr ( std::is_same_v<T, Nil> )
-            {
-                write_stdout_utf8( u8"NIL" );
-            }
-            else if constexpr ( std::is_same_v<T, ConsCellPtr> )
-            {
-                write_stdout_utf8( u8"(" );
-                print( value->car );
-                SExpression cdr = value->cdr;
-
-                while ( std::holds_alternative<ConsCellPtr>(cdr.value) )
-                {
-                    ConsCellPtr cell = std::get<ConsCellPtr>(cdr.value);
-
-                    write_stdout_utf8( u8" " );
-                    print( cell->car );
-                    cdr = cell->cdr;
-                }
-                if ( !std::holds_alternative<Nil>(cdr.value) )
-                {
-                    write_stdout_utf8( u8" . " );
-                    print( cdr );
-                }
-                write_stdout_utf8( u8")" );
-            }
-            else if constexpr ( std::is_same_v<T, String> )
-            {
-                write_stdout_utf8( u8"\"" );
-                write_stdout_utf8( value );
-                write_stdout_utf8( u8"\"" );
-            }
-            else if constexpr ( std::is_same_v<T, Symbol> )
-            {
-                write_stdout_utf8( value.name );
-            }
-        },
-        expr.value);
-}
-#endif
 
 /**
  *  @note Use "will-move-from" parameters to avoid unnecessary copies.
