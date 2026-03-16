@@ -21,7 +21,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 project(
   my_lisp
   VERSION 0.0.2
-  DESCRIPTION ""
+  DESCRIPTION "My Simple LISP Interpreter"
   HOMEPAGE_URL "https://github.com/mr-mocap/my-lisp"
   LANGUAGES CXX C)
 

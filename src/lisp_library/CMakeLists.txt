@@ -1,7 +1,7 @@
 include(GenerateExportHeader)
 
 
-add_library(lisp_library symboltable.cpp checks.cpp  structures.cpp text_io.cpp contract_helpers.cpp  reader.cpp tokenizer.cpp parser.cpp)
+add_library(lisp_library checks.cpp contract_helpers.cpp parser.cpp reader.cpp structures.cpp symboltable.cpp text_io.cpp tokenizer.cpp)
 
 
 
