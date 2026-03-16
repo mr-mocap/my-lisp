@@ -24,12 +24,10 @@ void create_standard_packages(PackageCollection &pc)
 
 int main(void)
 {
-    PackageCollection package_collection;
+    BasicLispSetup lisp_machine;
 
-    create_standard_packages(package_collection);
+    lisp_machine.setup();
 
-    Environment global_environment( package_collection.find_package(u8"COMMON-LISP-USER"),
-                                    package_collection);
     Reader    reader;
     Tokenizer tokenizer(reader);
     
@@ -37,11 +35,11 @@ int main(void)
     {
         std::cout << "> " << std::flush;
 
-        ParseResult result = read_expression(tokenizer);
+        ParseResult result = read_expression(tokenizer, lisp_machine.environment());
 
         if ( result )
         {
-            print( result.value(), std::cout );
+            print( result.value(), lisp_machine.environment(), std::cout );
             std::cout << std::endl;
         }
         else

@@ -10,4 +10,4 @@ ConsCellPtr cons(SExpression first, SExpression rest);
 
 void find_symbol(const Environment &environment, StringView name);
 
-void print(const SExpression &expr, std::ostream &output);
+void print(const SExpression &expr, const Environment &environment, std::ostream &output);

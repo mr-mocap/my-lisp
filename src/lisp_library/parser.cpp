@@ -7,7 +7,7 @@
 
 using my_lisp::ParseError;
 
-static ParseResult read_expression_impl(Tokenizer &tokenizer);
+static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &environment);
 
 // Minimal parser that consumes tokens and builds SExpression values.
 // - Symbols are interned via a global SymbolTable instance (simple).
@@ -26,11 +26,14 @@ static SExpression make_string(StringView sv)
     return { .value = ::String(sv) };
 }
 
-static SExpression make_symbol(StringView sv)
+static SExpression make_symbol(StringView sv, Environment &environment)
 {
-    Symbol s = g_symbol_table.intern(sv);
+    OptionalSymbol sym_opt = environment.find_symbol(sv);
 
-    return { .value = s };
+    if ( sym_opt )
+        return { .value = sym_opt.value() };
+    else
+        return { .value = environment.current_package()->intern(sv) };
 }
 
 // Try to parse a numeric literal. On failure return a ParseError instead of
@@ -47,13 +50,13 @@ static ParseResult make_number(StringView sv)
 
         // Ensure the entire token was consumed by the number parser
         if (idx != bytes.size())
-            return std::unexpected(ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" });
+            return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
 
         return ParseResult( SExpression{ .value = v } );
     }
     catch (...)
     {
-        return std::unexpected(ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" });
+        return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
     }
 }
 
@@ -87,7 +90,7 @@ static SExpression make_cons(SExpression car, SExpression cdr)
 }
 
 // Parse the rest of a list given the first token of the first element.
-static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
+static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environment &environment)
 {
     // If we were handed an EOF token, treat as malformed and return error.
     if (t.type == Tokenizer::Type_e::Eof)
@@ -110,10 +113,10 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
 
                 if (nested_first.type == Tokenizer::Type_e::RightParen)
                     return ParseResult( make_nil() );
-                return parse_list(tokenizer, nested_first);
+                return parse_list(tokenizer, nested_first, environment);
         }
         case Tokenizer::Type_e::Symbol:
-            return ParseResult( make_symbol(tt.text) );
+            return ParseResult( make_symbol(tt.text, environment) );
         case Tokenizer::Type_e::String:
             return ParseResult( make_string(tt.text) );
         case Tokenizer::Type_e::Number:
@@ -142,12 +145,12 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
         }
         case Tokenizer::Type_e::Quote:
         {
-            ParseResult quoted_res = read_expression_impl(tokenizer);
+            ParseResult quoted_res = read_expression_impl(tokenizer, environment);
 
             if (!quoted_res)
                 return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position, "Unexpected token after quote" } );
 
-            SExpression qsym = make_symbol(u8"quote");
+            SExpression qsym = make_symbol(u8"quote", environment);
 
             return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
         }
@@ -177,7 +180,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
     }
     if (next.type == Tokenizer::Type_e::Dot)
     {
-        auto cdr_res = read_expression_impl(tokenizer);
+        auto cdr_res = read_expression_impl(tokenizer, environment);
 
         if (!cdr_res)
             return std::unexpected( ParseError{ ParseError::MalformedDottedPair, next.position, "Missing cdr after dot" } );
@@ -190,7 +193,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
         return ParseResult( make_cons( head, cdr_res.value() ) );
     }
 
-    auto rest_res = parse_list(tokenizer, next);
+    auto rest_res = parse_list(tokenizer, next, environment);
 
     if (!rest_res)
         return std::unexpected( rest_res.error() );
@@ -199,7 +202,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t)
 }
 
 
-static ParseResult read_expression_impl(Tokenizer &tokenizer)
+static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &environment)
 {
     Tokenizer::Token token = tokenizer.next_token();
 
@@ -216,13 +219,13 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer)
         if (next.type == Tokenizer::Type_e::RightParen)
             return ParseResult( make_nil() );
 
-        return parse_list(tokenizer, next);
+        return parse_list(tokenizer, next, environment);
     }
     case Tokenizer::Type_e::RightParen:
         // stray right paren — return an explicit parse error instead of NIL
         return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position, "Stray right parenthesis" } );
     case Tokenizer::Type_e::Symbol:
-        return ParseResult( make_symbol(token.text) );
+        return ParseResult( make_symbol(token.text, environment) );
     case Tokenizer::Type_e::String:
         return ParseResult( make_string(token.text) );
     case Tokenizer::Type_e::Number:
@@ -233,12 +236,12 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer)
         return ParseResult( make_char(token.text) );
     case Tokenizer::Type_e::Quote:
     {
-        ParseResult quoted_res = read_expression_impl(tokenizer);
+        ParseResult quoted_res = read_expression_impl(tokenizer, environment);
 
         if (!quoted_res)
             return std::unexpected( quoted_res.error() );
 
-        SExpression qsym = make_symbol(u8"quote");
+        SExpression qsym = make_symbol(u8"quote", environment);
 
         return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
     }
@@ -248,9 +251,9 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer)
     }
 }
 
-ParseResult read_expression(Tokenizer &tokenizer)
+ParseResult read_expression(Tokenizer &tokenizer, Environment &environment)
 {
-    auto res = read_expression_impl(tokenizer);
+    auto res = read_expression_impl(tokenizer, environment);
 
     if (!res)
         return std::unexpected( res.error() );

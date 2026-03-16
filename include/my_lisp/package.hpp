@@ -38,6 +38,11 @@ public:
         return m_symbol_table.find_symbol(symbol_name);
     }
 
+    StringView symbol_name(Symbol s) const
+    {
+        return m_symbol_table.get_string(s);
+    }
+
     Symbol intern(StringView symbol_name)
     {
         Symbol new_symbol = m_symbol_table.intern(symbol_name);

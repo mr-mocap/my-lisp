@@ -37,11 +37,11 @@ int main()
     {
         std::cout << "> " << std::flush;
 
-        ParseResult result = read_expression(tokenizer);
+        ParseResult result = read_expression(tokenizer, global_environment);
 
         if ( result )
         {
-            print( result.value(), std::cout );
+            print( result.value(), global_environment, std::cout );
             std::cout << std::endl;
         }
         else

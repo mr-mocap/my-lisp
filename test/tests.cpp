@@ -184,20 +184,28 @@ TEST_CASE("type() returns what type an SExpression is constructed with", "[SExpr
 
 TEST_CASE("print() can print a Nil SExpression", "[print]")
 {
+    BasicLispSetup lisp_machine;
+
+    lisp_machine.setup();
+
     SExpression expr{ Nil{} };
     std::ostringstream oss;
 
-    print(expr, oss);
+    print(expr, lisp_machine.environment(), oss);
 
     REQUIRE(oss.str() == "NIL");
 }
 
 TEST_CASE("print() can print a String SExpression", "[print]")
 {
+    BasicLispSetup lisp_machine;
+
+    lisp_machine.setup();
+
     SExpression expr{ String{ u8"Hello, World!" } };
     std::ostringstream oss;
 
-    print(expr, oss);
+    print(expr, lisp_machine.environment(), oss);
 
     REQUIRE(oss.str() == "\"Hello, World!\"");
 }

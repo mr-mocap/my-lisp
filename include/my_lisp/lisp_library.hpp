@@ -2,6 +2,7 @@
 
 #include <my_lisp/lisp_library_export.hpp>
 
+#include <my_lisp/basiclispsetup.hpp>
 #include <my_lisp/symbol.hpp>
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/package.hpp>

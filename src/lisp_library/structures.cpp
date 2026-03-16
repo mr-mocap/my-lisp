@@ -1,51 +1,77 @@
 #include <my_lisp/structures.hpp>
 #include <my_lisp/text_io.hpp>
-#include <format>
 
 
-void print(const SExpression &expr, std::ostream &output)
+void print(const SExpression &expr, const Environment &environment, std::ostream &output)
 {
     struct Visitor {
-        explicit Visitor(std::ostream &out) : output(out) {}
+        explicit Visitor(std::ostream &out, const Environment &e) : output(out), env(e) {}
+        explicit Visitor(std::ostream &out, const Environment &e, int i) : output(out), env(e), iteration(i) {}
 
         void operator()(Nil) const
         {
-            output << "NIL";
+            std::print(output, "NIL");
         }
         void operator()(const String &s) const
         {
-            output << std::format("\"{}\"", text_io::to_string_view(s));
+            std::print(output, "\"{}\"", text_io::to_string_view(s));
+        }
+        void operator()(Symbol s) const
+        {
+            StringView sym_name( env.symbol_name(s) );
+
+            std::print(output, "{}", (sym_name.empty()) ? "NIL" : text_io::to_string_view(sym_name));
         }
         void operator()(double d) const
         {
-            // simple number printing
-            std::string s = std::to_string(d);
-
-            output << s;
+            std::print(output, "{}", d);
         }
         void operator()(bool b) const
         {
-            output << (b) ? "#t" : "#f";
+            std::print(output, "{}", (b) ? "#t" : "#f");
         }
         void operator()(char32_t c) const
         {
             // naive conversion of codepoint to utf-8 bytes is not implemented;
             // print as numeric value for now
-            output << static_cast<int>(c);
+            if ( c <= 0x7F )
+                std::print(output, "{}", static_cast<char>(c));
+            else
+                std::print(output, "Printing characters outside of ASCII range not implemented yet");
         }
-        void operator()(Symbol) const
+        void operator()(const ConsCellPtr &cons) const
         {
-            output << "NOT IMPLEMENTED";
-        }
-        void operator()(const ConsCellPtr &) const
-        {
-            output << "NOT IMPLEMENTED";
+            // Dotted pair?
+            if ( cons->isDottedPair() )
+            {
+                std::print(output, "(");
+                std::visit( Visitor( output, env ), cons->car.value );
+                std::print(output, " . ");
+                std::visit( Visitor( output, env ), cons->cdr.value );
+                std::print(output, ")");
+            }
+            else if ( cons->isListSegment() )
+            {
+                if ( iteration == 0 )
+                    std::print(output, "(");
+
+                std::visit( Visitor( output, env ), cons->car.value );
+                std::print(output, " ");
+                std::visit( Visitor( output, env, iteration + 1 ), cons->cdr.value );
+            }
+            else if ( cons->isEndListSegment() )
+            {
+                std::visit( Visitor( output, env ), cons->car.value );
+                std::print(output, ")");
+            }
         }
 
         std::ostream &output;
+        const Environment &env;
+        int iteration = 0;
     };
 
-    std::visit( Visitor( output ), expr.value );
+    std::visit( Visitor( output, environment ), expr.value );
 }
 
 

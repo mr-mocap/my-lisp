@@ -92,6 +92,22 @@ public:
         
         return std::nullopt;
     }
+
+    StringView symbol_name(Symbol symbol) const
+    {
+        if ( m_current_package.expired() )
+            return StringView();
+
+        if ( symbol.home_package.empty() )
+            return StringView();
+
+        const PackagePtr package_for_symbol = m_packagecollection.find_package( symbol.home_package );
+
+        if ( !package_for_symbol )
+            return StringView();
+
+        return package_for_symbol->symbol_name( symbol );
+    }
 protected:
     Environment            *m_parent_environment = nullptr;
     std::weak_ptr<Package>  m_current_package;

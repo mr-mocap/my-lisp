@@ -66,4 +66,21 @@ struct ConsCell
 {
     SExpression car;
     SExpression cdr;
+
+    bool isListSegment() const
+    {
+        return car.type() != SExpression::ConsCell && car.type() != SExpression::Nil && cdr.type() == SExpression::ConsCell;
+    }
+
+    bool isEndListSegment() const
+    {
+        return (car.type() != SExpression::ConsCell && car.type() != SExpression::Nil) &&
+                cdr.type() == SExpression::Nil;
+    }
+
+    bool isDottedPair() const
+    {
+        return (car.type() != SExpression::ConsCell) && (cdr.type() != SExpression::ConsCell) &&
+               (car.type() != SExpression::Nil) && (cdr.type() != SExpression::Nil);
+    }
 };

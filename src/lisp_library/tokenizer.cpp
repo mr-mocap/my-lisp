@@ -71,11 +71,14 @@ bool is_symbol_initial(char c)
            std::string_view("+-*/<=>!?_&%$#@^~").find(c) != std::string::npos;
 }
 
-bool is_symbol_subsequent(char c)
+bool is_symbol_initial_uc(unsigned char c)
 {
-    return is_symbol_initial(c) ||
-           std::isdigit(static_cast<unsigned char>(c)) ||
-           c == '.' || c == ':';
+    return std::isalpha(c) || std::string_view("+-*/<=>!?_&%$#@^~").find(c) != std::string::npos;
+}
+
+bool is_symbol_subsequent_uc(unsigned char c)
+{
+    return is_symbol_initial_uc(c) || std::isdigit(c) || c == '.' || c == ':';
 }
 
 }
@@ -319,7 +322,7 @@ Tokenizer::Token Tokenizer::next_token()
         size_t start = m_pos;
 
         ++m_pos;
-        while ( is_symbol_subsequent( current_char(m_buffer, m_pos) ) )
+        while ( is_symbol_subsequent_uc( current_char_as_uc(m_buffer, m_pos) ) )
             ++m_pos;
 
         size_t len = m_pos - start;

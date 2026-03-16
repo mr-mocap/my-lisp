@@ -8,11 +8,15 @@ TEST_CASE("read_expression parses symbols and strings", "[Parser]")
 {
     SECTION("Symbol")
     {
+        BasicLispSetup lisp_machine;
+
+        lisp_machine.setup();
+
         std::istringstream iss("symbol");
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        auto res = read_expression(tokenizer);
+        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -21,11 +25,15 @@ TEST_CASE("read_expression parses symbols and strings", "[Parser]")
 
     SECTION("String")
     {
+        BasicLispSetup lisp_machine;
+
+        lisp_machine.setup();
+
         std::istringstream iss("\"hello\"");
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        auto res = read_expression(tokenizer);
+        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -38,11 +46,15 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 {
     SECTION("Empty list")
     {
+        BasicLispSetup lisp_machine;
+
+        lisp_machine.setup();
+
         std::istringstream iss("()");
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        auto res = read_expression(tokenizer);
+        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -51,11 +63,15 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
     SECTION("Simple list")
     {
+        BasicLispSetup lisp_machine;
+
+        lisp_machine.setup();
+
         std::istringstream iss("(a b)");
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        auto res = read_expression(tokenizer);
+        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -72,11 +88,15 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
     SECTION("Dotted pair")
     {
+        BasicLispSetup lisp_machine;
+
+        lisp_machine.setup();
+
         std::istringstream iss("(a . b)");
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        auto res = read_expression(tokenizer);
+        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -89,11 +109,15 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
     SECTION("Nested list")
     {
+        BasicLispSetup lisp_machine;
+
+        lisp_machine.setup();
+
         std::istringstream iss("(a (b c))");
         Reader reader(iss);
         Tokenizer tokenizer(reader);
 
-        auto res = read_expression(tokenizer);
+        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -124,19 +148,29 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
 TEST_CASE("read_expression handles quote", "[Parser]")
 {
+    BasicLispSetup lisp_machine;
+
+    lisp_machine.setup();
+
     std::istringstream iss("'x");
     Reader reader(iss);
     Tokenizer tokenizer(reader);
 
-        auto res = read_expression(tokenizer);
-        REQUIRE(res.has_value());
-        SExpression e = res.value();
+    ParseResult res = read_expression(tokenizer, lisp_machine.environment());
 
-        REQUIRE(e.type() == SExpression::ConsCell);
-        auto cell = e.asConsCellPtr();
+    REQUIRE(res.has_value());
+
+    SExpression e = res.value();
+
+    REQUIRE(e.type() == SExpression::ConsCell);
+
+    ConsCellPtr cell = e.asConsCellPtr();
+
     REQUIRE(cell->car.type() == SExpression::Symbol); // quote symbol
     REQUIRE(cell->cdr.type() == SExpression::ConsCell);
-    auto tail = cell->cdr.asConsCellPtr();
+
+    ConsCellPtr tail = cell->cdr.asConsCellPtr();
+
     REQUIRE(tail->car.type() == SExpression::Symbol); // quoted symbol x
     REQUIRE(tail->cdr.type() == SExpression::Nil);
 }
