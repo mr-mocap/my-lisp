@@ -28,7 +28,8 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         }
         void operator()(bool b) const
         {
-            std::print(output, "{}", (b) ? "#t" : "#f");
+            //std::print(output, "{}", (b) ? "#t" : "#f"); // The "scheme" way?
+            std::print(output, "{}", (b) ? "T" : "NIL");
         }
         void operator()(char32_t c) const
         {
