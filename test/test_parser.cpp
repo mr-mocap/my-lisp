@@ -1,6 +1,7 @@
 #include <my_lisp/lisp_library.hpp>
 #include <cstdlib>
 #include <iostream>
+#include <print>
 
 
 void create_standard_packages(PackageCollection &pc)
@@ -33,7 +34,7 @@ int main(void)
     
     while ( true )
     {
-        std::cout << "> " << std::flush;
+        std::print("{} >", text_io::to_string_view( lisp_machine.environment().current_package()->name() ));
 
         ParseResult result = read_expression(tokenizer, lisp_machine.environment());
 
