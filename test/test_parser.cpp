@@ -34,7 +34,9 @@ int main(void)
     
     while ( true )
     {
-        std::print("{} >", text_io::to_string_view( lisp_machine.environment().current_package()->name() ));
+        PackagePtr current_package = lisp_machine.environment().current_package();
+
+        std::print("{} >", text_io::to_string_view(current_package->name()));
 
         ParseResult result = read_expression(tokenizer, lisp_machine.environment());
 
