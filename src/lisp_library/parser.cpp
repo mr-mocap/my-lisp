@@ -14,11 +14,14 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 // - Numbers and booleans are represented as Symbols for now (placeholder)
 // - Strings become ::String
 
-static SymbolTable g_symbol_table;
-
 static SExpression make_nil()
 {
     return { .value = ::Nil{} };
+}
+
+static SExpression make_true()
+{
+    return { .value = ::True{} };
 }
 
 static SExpression make_string(StringView sv)
@@ -103,8 +106,10 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
         }
         case Tokenizer::Type_e::Symbol:
             return ParseResult( make_symbol(tt.text, environment) );
+
         case Tokenizer::Type_e::String:
             return ParseResult( make_string(tt.text) );
+
         case Tokenizer::Type_e::Number:
         {
             auto num_res = make_number(tt.text);
@@ -189,6 +194,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
     case Tokenizer::Type_e::Eof:
         // No expression available at top-level: treat as EOF
         return std::unexpected( ParseError{ ParseError::UnexpectedEOF, token.position, "Unexpected EOF at top-level" } );
+
     case Tokenizer::Type_e::LeftParen:
     {
         // If next token is RightParen then return empty list (NIL)

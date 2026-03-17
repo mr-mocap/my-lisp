@@ -11,6 +11,7 @@ struct SExpression
     enum Type
     {
         Nil,
+        True,
         String,
         Symbol,
         Number,
@@ -18,7 +19,7 @@ struct SExpression
         ConsCell
     };
 
-    std::variant<::Nil, ::String, ::Symbol, double, char32_t, ::ConsCellPtr> value;
+    std::variant<::Nil, ::True, ::String, ::Symbol, double, char32_t, ::ConsCellPtr> value;
 
     constexpr Type type() const
     {
@@ -28,6 +29,11 @@ struct SExpression
     constexpr ::Nil asNil()
     {
         return std::get<::Nil>(value);
+    }
+
+    constexpr ::True asTrue()
+    {
+        return std::get<::True>(value);
     }
 
     constexpr ::String &asString()

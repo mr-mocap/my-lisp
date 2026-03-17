@@ -12,6 +12,10 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         {
             std::print(output, "NIL");
         }
+        void operator()(True) const
+        {
+            std::print(output, "T");
+        }
         void operator()(const String &s) const
         {
             std::print(output, "\"{}\"", text_io::to_string_view(s));
