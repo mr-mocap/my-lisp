@@ -216,10 +216,10 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         return ParseResult( make_string(token.text) );
 
     case Tokenizer::Type_e::Number:
-        return ParseResult( make_number(token.text) );
+        return make_number(token.text);
 
     case Tokenizer::Type_e::Char:
-        return ParseResult( make_char(token.text) );
+        return make_char(token.text);
 
     case Tokenizer::Type_e::Quote:
     {
