@@ -258,21 +258,11 @@ Tokenizer::Token Tokenizer::next_token()
         return Token{ Type_e::String, StringView(m_storage.data() + ofs, accum.size()), token_pos };
     }
 
-    // Booleans and chars
+    // chars
     if (c == '#')
     {
         const char next = current_char(m_buffer, m_pos + 1);
 
-        if (next == 't' || next == 'f')
-        {
-            m_pos += 2;
-            size_t ofs = m_storage.size();
-
-            m_storage.append(1, u8'#');
-            m_storage.append(reinterpret_cast<const char8_t *>(&next), 1);
-
-            return Token{ Type_e::Boolean, StringView(m_storage.data() + ofs, 2), token_pos };
-        }
         if (next == '\\')
         {
             size_t p = m_pos + 2;

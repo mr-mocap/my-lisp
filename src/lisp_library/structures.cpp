@@ -26,11 +26,6 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         {
             std::print(output, "{}", d);
         }
-        void operator()(bool b) const
-        {
-            //std::print(output, "{}", (b) ? "#t" : "#f"); // The "scheme" way?
-            std::print(output, "{}", (b) ? "T" : "NIL");
-        }
         void operator()(char32_t c) const
         {
             // naive conversion of codepoint to utf-8 bytes is not implemented;

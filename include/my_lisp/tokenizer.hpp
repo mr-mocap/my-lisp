@@ -16,7 +16,6 @@ public:
         Quote,
         Comment,
         Dot,
-        Boolean,
         Char,
         Eof
     };

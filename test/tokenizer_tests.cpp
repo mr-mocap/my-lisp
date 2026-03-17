@@ -98,26 +98,6 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text == u8".");
         REQUIRE(token.position == 0);
     }
-    SECTION("Boolean true")
-    {
-        iss.str("#t");
-
-        Tokenizer::Token token = tokenizer.next_token();
-
-        REQUIRE(token.type == Tokenizer::Type_e::Boolean);
-        REQUIRE(token.text == u8"#t");
-        REQUIRE(token.position == 0);
-    }
-    SECTION("Boolean false")
-    {
-        iss.str("#f");
-
-        Tokenizer::Token token = tokenizer.next_token();
-
-        REQUIRE(token.type == Tokenizer::Type_e::Boolean);
-        REQUIRE(token.text == u8"#f");
-        REQUIRE(token.position == 0);
-    }
     SECTION("Char")
     {
         iss.str("#\\A"); // "\\" is a single backslash character in the input,

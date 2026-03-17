@@ -60,20 +60,6 @@ static ParseResult make_number(StringView sv)
     }
 }
 
-static ParseResult make_boolean(StringView sv)
-{
-    // sv will be like u8"#t" or u8"#f"
-    if (sv.size() >= 2 && sv[0] == u8'#')
-    {
-        if ( sv[1] == 't' )
-            return ParseResult( SExpression{ .value = true });
-        else if ( sv[1] == 'f' )
-            return ParseResult( SExpression{ .value = false } );
-    }
-
-    return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid boolean literal" } );
-}
-
 static ParseResult make_char(StringView sv)
 {
     if (sv.empty())
@@ -126,14 +112,6 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
             if (!num_res)
                 return std::unexpected( num_res.error() );
             return num_res;
-        }
-        case Tokenizer::Type_e::Boolean:
-        {
-            auto bres = make_boolean(tt.text);
-
-            if (!bres)
-                return std::unexpected( bres.error() );
-            return bres;
         }
         case Tokenizer::Type_e::Char:
         {
@@ -224,16 +202,19 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
     case Tokenizer::Type_e::RightParen:
         // stray right paren — return an explicit parse error instead of NIL
         return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position, "Stray right parenthesis" } );
+
     case Tokenizer::Type_e::Symbol:
         return ParseResult( make_symbol(token.text, environment) );
+
     case Tokenizer::Type_e::String:
         return ParseResult( make_string(token.text) );
+
     case Tokenizer::Type_e::Number:
         return ParseResult( make_number(token.text) );
-    case Tokenizer::Type_e::Boolean:
-        return ParseResult( make_boolean(token.text) );
+
     case Tokenizer::Type_e::Char:
         return ParseResult( make_char(token.text) );
+
     case Tokenizer::Type_e::Quote:
     {
         ParseResult quoted_res = read_expression_impl(tokenizer, environment);
