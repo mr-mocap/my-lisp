@@ -2,10 +2,10 @@
 #include <my_lisp/structures.hpp>
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/text_io.hpp>
-#include <functional>
+#include <my_lisp/tokenizer.hpp>
 #include <expected>
 
-using my_lisp::ParseError;
+
 
 static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &environment);
 
@@ -17,11 +17,6 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 static SExpression make_nil()
 {
     return { .value = ::Nil{} };
-}
-
-static SExpression make_true()
-{
-    return { .value = ::True{} };
 }
 
 static SExpression make_string(StringView sv)

@@ -1,27 +1,23 @@
 #pragma once
 
-#include <my_lisp/fundamental_types.hpp>
-#include <iostream>
+#include <my_lisp/tokenizer.hpp>
+#include <my_lisp/types/parsing.hpp>
+
+
+class Environment;
 
 class Reader
 {
 public:
-    Reader()
+    Reader(std::istream &input_stream = std::cin)
         :
-    m_input_stream( std::cin )
+        m_input( input_stream ),
+        m_tokenizer( m_input )
     {
     }
 
-    Reader(std::istream &input_stream)
-        :
-    m_input_stream( input_stream )
-    {
-    }
-
-    String read_line(); // Converted to UTF-8 string
-
-    // Return true if the underlying stream has reached end-of-file.
-    bool eof() const { return m_input_stream.eof(); }
+    ParseResult read_expression(Environment &environment);
 protected:
-    std::istream &m_input_stream;
+    Input     m_input;
+    Tokenizer m_tokenizer;
 };

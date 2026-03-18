@@ -1,7 +1,7 @@
 #include <my_lisp/tokenizer.hpp>
 #include <cctype>
 #include <string>
-#include <span>
+
 
 static inline char current_char(const ::String &buf, size_t pos)
 {
@@ -107,10 +107,10 @@ Tokenizer::Token Tokenizer::next_token()
         if (m_eof)
             return Token{ Type_e::Eof, StringView(), m_pos };
 
-        m_buffer = m_reader.read_line();
+        m_buffer = m_input.read_line();
         m_buffer.push_back( u8'\n' );
         m_pos = 0;
-        if (m_reader.eof())
+        if (m_input.eof())
             m_eof = true;
     }
 
@@ -210,7 +210,7 @@ Tokenizer::Token Tokenizer::next_token()
                 if (m_eof)
                     break;
 
-                ::String nextline = m_reader.read_line();
+                ::String nextline = m_input.read_line();
 
                 nextline.push_back( u8'\n' );
                 m_buffer.append(nextline);
