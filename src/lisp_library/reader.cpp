@@ -1,11 +1,8 @@
 #include <my_lisp/reader.hpp>
-#include <my_lisp/text_io.hpp>
+#include <my_lisp/parser.hpp>
 
 
-String Reader::read_line()
+ParseResult Reader::read_expression(Environment &environment)
 {
-    std::string line;
-
-    std::getline(m_input_stream, line);
-    return text_io::to_utf8_string(line);
+    return ::read_expression( m_tokenizer, environment );
 }

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <my_lisp/reader.hpp>
+#include <my_lisp/input.hpp>
 #include <cstddef>
+
 
 class Tokenizer
 {
@@ -20,9 +21,9 @@ public:
         Eof
     };
 
-    Tokenizer(Reader &input)
+    Tokenizer(Input &input)
         :
-        m_reader(input)
+        m_input(input)
     {
     }
 
@@ -38,7 +39,7 @@ public:
     };
 
     // Read the next token from the input. This will pull lines from the
-    // provided `Reader` as needed. On end-of-file, a Token with type `EOF`
+    // provided `Input` as needed. On end-of-file, a Token with type `EOF`
     // will be returned.
     Token next_token();
 
@@ -47,7 +48,7 @@ public:
     Token peek();
 
 protected:
-    Reader &m_reader;
+    Input &m_input;
 
     // Current input buffer (one or more lines concatenated as needed)
     ::String m_buffer;

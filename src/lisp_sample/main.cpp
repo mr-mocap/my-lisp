@@ -31,13 +31,12 @@ int main()
     Environment global_environment( package_collection.find_package(u8"COMMON-LISP-USER"),
                                     package_collection);
     Reader    reader;
-    Tokenizer tokenizer(reader);
     
     while ( true )
     {
         std::cout << "> " << std::flush;
 
-        ParseResult result = read_expression(tokenizer, global_environment);
+        ParseResult result = reader.read_expression(global_environment);
 
         if ( result )
         {

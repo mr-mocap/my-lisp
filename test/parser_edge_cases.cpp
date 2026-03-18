@@ -11,15 +11,14 @@ TEST_CASE("unterminated list returns an UnterminatedList error", "[Parser][Edge]
 
     std::istringstream iss("(a b"); // missing closing paren
     Reader reader(iss);
-    Tokenizer tokenizer(reader);
 
-    auto res = read_expression(tokenizer, lisp_machine.environment());
+    auto res = reader.read_expression(lisp_machine.environment());
 
     REQUIRE(!res.has_value());
 
     auto err = res.error();
 
-    REQUIRE(err.kind == my_lisp::ParseError::UnterminatedList);
+    REQUIRE(err.kind == ParseError::UnterminatedList);
 }
 
 TEST_CASE("malformed dotted pair returns ParseError of MalformedDottedPair", "[Parser][Edge]")
@@ -30,15 +29,14 @@ TEST_CASE("malformed dotted pair returns ParseError of MalformedDottedPair", "[P
 
     std::istringstream iss("(a . )"); // dot but no cdr
     Reader reader(iss);
-    Tokenizer tokenizer(reader);
 
-    auto res2 = read_expression(tokenizer, lisp_machine.environment());
+    auto res = reader.read_expression(lisp_machine.environment());
 
-    REQUIRE(!res2.has_value());
+    REQUIRE(!res.has_value());
 
-    auto err2 = res2.error();
+    auto err = res.error();
 
-    REQUIRE(err2.kind == my_lisp::ParseError::MalformedDottedPair);
+    REQUIRE(err.kind == ParseError::MalformedDottedPair);
 }
 
 TEST_CASE("stray right parenthesis returns UnexpectedToken", "[Parser][Edge]")
@@ -49,15 +47,14 @@ TEST_CASE("stray right parenthesis returns UnexpectedToken", "[Parser][Edge]")
 
     std::istringstream iss(")");
     Reader reader(iss);
-    Tokenizer tokenizer(reader);
 
-    auto res = read_expression(tokenizer, lisp_machine.environment());
+    auto res = reader.read_expression(lisp_machine.environment());
 
     REQUIRE(!res.has_value());
 
     auto err = res.error();
 
-    REQUIRE(err.kind == my_lisp::ParseError::UnexpectedToken);
+    REQUIRE(err.kind == ParseError::UnexpectedToken);
     REQUIRE(err.message == "Stray right parenthesis");
 }
 
@@ -69,14 +66,13 @@ TEST_CASE("top-level unexpected token returns UnexpectedToken", "[Parser][Edge]"
 
     std::istringstream iss(".");
     Reader reader(iss);
-    Tokenizer tokenizer(reader);
 
-    auto res = read_expression(tokenizer, lisp_machine.environment());
+    auto res = reader.read_expression(lisp_machine.environment());
 
     REQUIRE(!res.has_value());
 
     auto err = res.error();
 
-    REQUIRE(err.kind == my_lisp::ParseError::UnexpectedToken);
+    REQUIRE(err.kind == ParseError::UnexpectedToken);
     REQUIRE(err.message == "Unexpected token");
 }

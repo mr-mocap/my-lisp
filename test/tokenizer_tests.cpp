@@ -5,8 +5,8 @@
 TEST_CASE("Tokenizer returns EOF token at end of input", "[Tokenizer]")
 {
     std::istringstream iss("");
-    Reader reader(iss);
-    Tokenizer tokenizer(reader);
+    Input input(iss);
+    Tokenizer tokenizer(input);
     Tokenizer::Token token = tokenizer.next_token();
 
     REQUIRE(token.type == Tokenizer::Type_e::Eof);
@@ -15,8 +15,8 @@ TEST_CASE("Tokenizer returns EOF token at end of input", "[Tokenizer]")
 TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
 {
     std::istringstream iss("");
-    Reader reader(iss);
-    Tokenizer tokenizer(reader);
+    Input input(iss);
+    Tokenizer tokenizer(input);
 
     SECTION("Left Parentheses")
     {
@@ -124,8 +124,8 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
 TEST_CASE("Empty list is tokenized", "[Tokenizer]")
 {
     std::istringstream iss("()");
-    Reader reader(iss);
-    Tokenizer tokenizer(reader);
+    Input input(iss);
+    Tokenizer tokenizer(input);
 
     Tokenizer::Token token = tokenizer.next_token();
 

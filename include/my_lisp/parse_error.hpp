@@ -3,8 +3,6 @@
 #include <string>
 #include <cstddef>
 
-namespace my_lisp
-{
 
 struct ParseError
 {
@@ -31,5 +29,3 @@ inline std::string to_string(const ParseError &e)
 {
     return e.message + " (pos=" + std::to_string(e.position) + ")";
 }
-
-} // namespace my_lisp

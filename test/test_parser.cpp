@@ -29,8 +29,7 @@ int main(void)
 
     lisp_machine.setup();
 
-    Reader    reader;
-    Tokenizer tokenizer(reader);
+    Reader reader;
     
     while ( true )
     {
@@ -38,7 +37,7 @@ int main(void)
 
         std::print("{} >", text_io::to_string_view(current_package->name()));
 
-        ParseResult result = read_expression(tokenizer, lisp_machine.environment());
+        ParseResult result = reader.read_expression(lisp_machine.environment());
 
         if ( result )
         {

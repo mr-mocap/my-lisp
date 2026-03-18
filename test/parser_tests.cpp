@@ -14,9 +14,8 @@ TEST_CASE("read_expression parses symbols and strings", "[Parser]")
 
         std::istringstream iss("symbol");
         Reader reader(iss);
-        Tokenizer tokenizer(reader);
 
-        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
+        ParseResult res = reader.read_expression(lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -31,9 +30,8 @@ TEST_CASE("read_expression parses symbols and strings", "[Parser]")
 
         std::istringstream iss("\"hello\"");
         Reader reader(iss);
-        Tokenizer tokenizer(reader);
 
-        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
+        ParseResult res = reader.read_expression(lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -52,9 +50,8 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
         std::istringstream iss("()");
         Reader reader(iss);
-        Tokenizer tokenizer(reader);
 
-        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
+        ParseResult res = reader.read_expression(lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -69,9 +66,8 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
         std::istringstream iss("(a b)");
         Reader reader(iss);
-        Tokenizer tokenizer(reader);
 
-        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
+        ParseResult res = reader.read_expression(lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -94,9 +90,8 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
         std::istringstream iss("(a . b)");
         Reader reader(iss);
-        Tokenizer tokenizer(reader);
 
-        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
+        ParseResult res = reader.read_expression(lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -115,9 +110,8 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
 
         std::istringstream iss("(a (b c))");
         Reader reader(iss);
-        Tokenizer tokenizer(reader);
 
-        ParseResult res = read_expression(tokenizer, lisp_machine.environment());
+        ParseResult res = reader.read_expression(lisp_machine.environment());
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
@@ -154,9 +148,8 @@ TEST_CASE("read_expression handles quote", "[Parser]")
 
     std::istringstream iss("'x");
     Reader reader(iss);
-    Tokenizer tokenizer(reader);
 
-    ParseResult res = read_expression(tokenizer, lisp_machine.environment());
+    ParseResult res = reader.read_expression(lisp_machine.environment());
 
     REQUIRE(res.has_value());
 
