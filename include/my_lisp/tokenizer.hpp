@@ -2,6 +2,7 @@
 
 #include <my_lisp/input.hpp>
 #include <cstddef>
+#include <variant>
 
 
 class Tokenizer
@@ -13,6 +14,7 @@ public:
         RightParen,
         Symbol,
         Number,
+        FixedNumber,
         String,
         Quote,
         Comment,
@@ -31,11 +33,60 @@ public:
     Tokenizer(const Tokenizer &) = delete;
     Tokenizer &operator=(const Tokenizer &) = delete;
 
+    struct CommonData
+    {
+        StringView text;
+        size_t     position = 0;
+    };
+
+    struct NumberData
+    {
+        StringView text;
+        size_t     position;
+        double     value = 0.0;
+    };
+
+    struct FixedNumberData
+    {
+        StringView text;
+        size_t     position = 0;
+        int64_t    value = 0;
+    };
+
     struct Token
     {
         Type_e     type;
-        StringView text;
-        size_t     position;
+        std::variant<CommonData, NumberData, FixedNumberData> data;
+
+        StringView text() const
+        {
+            switch ( type )
+            {
+            case Number:
+                return asNumberData().text;
+            case FixedNumber:
+                return asFixedNumberData().text;
+            default:
+                return asCommonData().text;
+            }
+        }
+
+        size_t position() const
+        {
+            switch ( type )
+            {
+            case Number:
+                return asNumberData().position;
+            case FixedNumber:
+                return asFixedNumberData().position;
+            default:
+                return asCommonData().position;
+            }
+        }
+
+        const CommonData &asCommonData() const { return std::get<CommonData>(data); }
+        const NumberData &asNumberData() const { return std::get<NumberData>(data); }
+        const FixedNumberData &asFixedNumberData() const { return std::get<FixedNumberData>(data); }
     };
 
     // Read the next token from the input. This will pull lines from the

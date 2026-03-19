@@ -79,14 +79,14 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
     // If we were handed an EOF token, treat as malformed and return error.
     if (t.type == Tokenizer::Type_e::Eof)
     {
-        return std::unexpected( ParseError{ ParseError::UnterminatedList, t.position, "Unexpected EOF while starting list" } );
+        return std::unexpected( ParseError{ ParseError::UnterminatedList, t.position(), "Unexpected EOF while starting list"});
     }
 
     // Helper to construct an element from a token
     auto make_element_from_token = [&](Tokenizer::Token tt) -> std::expected<SExpression, ParseError> {
         if (tt.type == Tokenizer::Type_e::Eof)
         {
-            return std::unexpected( ParseError{ ParseError::UnexpectedEOF, tt.position, "Unexpected EOF while parsing element" } );
+            return std::unexpected( ParseError{ ParseError::UnexpectedEOF, tt.position(), "Unexpected EOF while parsing element"});
         }
         switch (tt.type)
         {
@@ -100,14 +100,14 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
                 return parse_list(tokenizer, nested_first, environment);
         }
         case Tokenizer::Type_e::Symbol:
-            return ParseResult( make_symbol(tt.text, environment) );
+            return ParseResult( make_symbol(tt.text(), environment));
 
         case Tokenizer::Type_e::String:
-            return ParseResult( make_string(tt.text) );
+            return ParseResult( make_string(tt.text()) );
 
         case Tokenizer::Type_e::Number:
         {
-            auto num_res = make_number(tt.text);
+            auto num_res = make_number(tt.text());
 
             if (!num_res)
                 return std::unexpected( num_res.error() );
@@ -115,7 +115,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
         }
         case Tokenizer::Type_e::Char:
         {
-            auto cres = make_char(tt.text);
+            auto cres = make_char(tt.text());
 
             if (!cres)
                 return std::unexpected( cres.error() );
@@ -126,14 +126,14 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
             ParseResult quoted_res = read_expression_impl(tokenizer, environment);
 
             if (!quoted_res)
-                return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position, "Unexpected token after quote" } );
+                return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position(), "Unexpected token after quote"});
 
             SExpression qsym = make_symbol(u8"quote", environment);
 
             return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
         }
         default:
-            return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position, "Unexpected token while parsing element" } );
+            return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position(), "Unexpected token while parsing element"});
         }
     };
 
@@ -149,7 +149,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
     // and return error.
     if (next.type == Tokenizer::Type_e::Eof)
     {
-        return std::unexpected( ParseError{ ParseError::UnterminatedList, next.position, "Unexpected EOF while parsing list" } );
+        return std::unexpected( ParseError{ ParseError::UnterminatedList, next.position(), "Unexpected EOF while parsing list"});
     }
 
     if (next.type == Tokenizer::Type_e::RightParen)
@@ -161,12 +161,12 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
         auto cdr_res = read_expression_impl(tokenizer, environment);
 
         if (!cdr_res)
-            return std::unexpected( ParseError{ ParseError::MalformedDottedPair, next.position, "Missing cdr after dot" } );
+            return std::unexpected( ParseError{ ParseError::MalformedDottedPair, next.position(), "Missing cdr after dot"});
 
         auto closing = tokenizer.next_token();
 
         if (closing.type != Tokenizer::Type_e::RightParen)
-            return std::unexpected( ParseError{ ParseError::MalformedDottedPair, closing.position, "Missing closing parenthesis after dotted pair" } );
+            return std::unexpected( ParseError{ ParseError::MalformedDottedPair, closing.position(), "Missing closing parenthesis after dotted pair"});
 
         return ParseResult( make_cons( head, cdr_res.value() ) );
     }
@@ -188,7 +188,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
     {
     case Tokenizer::Type_e::Eof:
         // No expression available at top-level: treat as EOF
-        return std::unexpected( ParseError{ ParseError::UnexpectedEOF, token.position, "Unexpected EOF at top-level" } );
+        return std::unexpected( ParseError{ ParseError::UnexpectedEOF, token.position(), "Unexpected EOF at top-level"});
 
     case Tokenizer::Type_e::LeftParen:
     {
@@ -202,19 +202,19 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
     }
     case Tokenizer::Type_e::RightParen:
         // stray right paren — return an explicit parse error instead of NIL
-        return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position, "Stray right parenthesis" } );
+        return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position(), "Stray right parenthesis"});
 
     case Tokenizer::Type_e::Symbol:
-        return ParseResult( make_symbol(token.text, environment) );
+        return ParseResult( make_symbol(token.text(), environment) );
 
     case Tokenizer::Type_e::String:
-        return ParseResult( make_string(token.text) );
+        return ParseResult( make_string(token.text()) );
 
     case Tokenizer::Type_e::Number:
-        return make_number(token.text);
+        return make_number(token.text());
 
     case Tokenizer::Type_e::Char:
-        return make_char(token.text);
+        return make_char(token.text());
 
     case Tokenizer::Type_e::Quote:
     {
@@ -229,7 +229,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
     }
     default:
         // Unexpected token at top-level
-        return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position, "Unexpected token" } );
+        return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position(), "Unexpected token"});
     }
 }
 

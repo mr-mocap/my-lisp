@@ -15,11 +15,12 @@ struct SExpression
         String,
         Symbol,
         Number,
+        FixedNumer,
         Char,
         ConsCell
     };
 
-    std::variant<::Nil, ::True, ::String, ::Symbol, double, char32_t, ::ConsCellPtr> value;
+    std::variant<::Nil, ::True, ::String, ::Symbol, double, int64_t, char32_t, ::ConsCellPtr> value;
 
     constexpr Type type() const
     {
@@ -49,6 +50,11 @@ struct SExpression
     constexpr double asNumber()
     {
         return std::get<double>(value);
+    }
+
+    constexpr int64_t asFixedNumber()
+    {
+        return std::get<int64_t>(value);
     }
 
     constexpr char32_t asChar()

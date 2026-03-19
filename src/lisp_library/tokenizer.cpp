@@ -1,6 +1,9 @@
 #include <my_lisp/tokenizer.hpp>
 #include <cctype>
 #include <string>
+#include <span>
+#include <charconv>
+#include <cassert>
 
 
 static inline char current_char(const ::String &buf, size_t pos)
@@ -30,6 +33,89 @@ static inline String uppercase_symbol(StringView input)
         result.append(1, static_cast<char8_t>(uc));
     }
     return result;
+}
+
+static inline int is_base_integer_specifier(char c)
+{
+    switch ( c )
+    {
+    case 'b':
+        return 2;
+    case 'o':
+        return 8;
+    case 'x':
+        return 16;
+    }
+    return 0; // Not recoognized
+}
+
+static bool is_digit_in_given_base(char c, int base)
+{
+    if ( base <= 10 )
+        return std::isdigit(c);
+    else if ( base == 16 )
+        return std::isxdigit(c);
+    return false; // Not a recognized base
+}
+
+Tokenizer::Token make_common(Tokenizer::Type_e t, StringView sv, size_t pos)
+{
+    return { .type = t, .data = Tokenizer::CommonData{ .text = sv, .position = pos } };
+}
+
+Tokenizer::Token make_leftparen(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::LeftParen, sv, pos);
+}
+
+Tokenizer::Token make_rightparen(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::RightParen, sv, pos);
+}
+
+Tokenizer::Token make_symbol(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::Symbol, sv, pos);
+}
+
+Tokenizer::Token make_number(StringView sv, size_t pos, double v)
+{
+    return { .type = Tokenizer::Type_e::Number, .data = Tokenizer::NumberData{.text = sv, .position = pos, .value = v } };
+}
+
+Tokenizer::Token make_fixednumber(StringView sv, size_t pos, int64_t v)
+{
+    return { .type = Tokenizer::Type_e::FixedNumber, .data = Tokenizer::FixedNumberData{ .text = sv, .position = pos, .value = v } };
+}
+
+Tokenizer::Token make_string(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::String, sv, pos);
+}
+
+Tokenizer::Token make_quote(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::Quote, sv, pos);
+}
+
+Tokenizer::Token make_comment(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::Comment, sv, pos);
+}
+
+Tokenizer::Token make_dot(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::Dot, sv, pos);
+}
+
+Tokenizer::Token make_char(StringView sv, size_t pos)
+{
+    return make_common(Tokenizer::Type_e::Char, sv, pos);
+}
+
+Tokenizer::Token make_eof(size_t pos)
+{
+    return make_common(Tokenizer::Type_e::Eof, StringView(), pos);
 }
 
 Tokenizer::Token Tokenizer::peek()
@@ -104,8 +190,8 @@ Tokenizer::Token Tokenizer::next_token()
         if (m_pos < m_buffer.size())
             break;
 
-        if (m_eof)
-            return Token{ Type_e::Eof, StringView(), m_pos };
+        if ( m_eof )
+            return make_eof( m_pos );
 
         m_buffer = m_input.read_line();
         m_buffer.push_back( u8'\n' );
@@ -134,7 +220,7 @@ Tokenizer::Token Tokenizer::next_token()
 
             m_storage.append( StringView(m_buffer.data() + ofs, m_pos - comment_start) );
 
-            return Token{ Type_e::Comment, StringView(m_storage.data() + ofs, m_storage.size()), comment_start};
+            return make_comment( StringView(m_storage.data() + ofs, m_storage.size()), comment_start );
         }
 
         if ( std::isspace(static_cast<unsigned char>(c)) )
@@ -157,7 +243,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append(1, u8'(');
 
-        return Token{ Type_e::LeftParen, StringView(m_storage.data() + ofs, 1), token_pos};
+        return make_leftparen( StringView(m_storage.data() + ofs, 1), token_pos );
     }
     if (c == ')')
     {
@@ -166,7 +252,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append(1, u8')');
 
-        return Token{ Type_e::RightParen, StringView(m_storage.data() + ofs, 1), token_pos };
+        return make_rightparen( StringView(m_storage.data() + ofs, 1), token_pos );
     }
     if (c == '\'')
     {
@@ -175,7 +261,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append(1, u8'\'');
 
-        return Token{ Type_e::Quote, StringView(m_storage.data() + ofs, 1), token_pos };
+        return make_quote( StringView(m_storage.data() + ofs, 1), token_pos );
     }
     if (c == '.')
     {
@@ -192,7 +278,7 @@ Tokenizer::Token Tokenizer::next_token()
 
             m_storage.append(1, u8'.');
 
-            return Token{ Type_e::Dot, StringView(m_storage.data() + ofs, 1), token_pos };
+            return make_dot( StringView(m_storage.data() + ofs, 1), token_pos );
         }
     }
 
@@ -255,7 +341,7 @@ Tokenizer::Token Tokenizer::next_token()
         size_t ofs = m_storage.size();
         m_storage.append(accum);
 
-        return Token{ Type_e::String, StringView(m_storage.data() + ofs, accum.size()), token_pos };
+        return make_string( StringView(m_storage.data() + ofs, accum.size()), token_pos );
     }
 
     // chars
@@ -275,14 +361,44 @@ Tokenizer::Token Tokenizer::next_token()
                 m_storage.append(m_buffer.data() + p - 1, 1);
                 m_pos = p;
 
-                return Token{ Type_e::Char, StringView(m_storage.data() + ofs, 1), token_pos};
+                return make_char( StringView(m_storage.data() + ofs, 1), token_pos );
+            }
+        }
+        else if ( int base = is_base_integer_specifier(next) )
+        {
+            m_pos += 2;
+
+            size_t first_pos = m_pos;
+            size_t ofs = m_storage.size();
+
+            while ( is_digit_in_given_base( current_char(m_buffer, m_pos), base ) )
+                ++m_pos;
+
+            size_t last_pos = m_pos;
+            const char *start = reinterpret_cast<const char *>(m_buffer.data() + first_pos);
+            const char *end   = reinterpret_cast<const char *>(m_buffer.data() + last_pos);
+            int64_t     result;
+            std::from_chars_result conversion = std::from_chars(start, end, result, base);
+
+            if ( conversion.ec == std::errc() )
+            {
+                // ASSUME: All characters matched
+                m_storage.append(m_buffer.data() + first_pos, m_buffer.data() + last_pos);
+                return make_fixednumber( StringView(m_storage.data() + ofs, last_pos - first_pos), token_pos, result );
+            }
+            else
+            {
+                // Error
+                // TODO: Implement
+                assert(false);
             }
         }
     }
 
-    // Numbers
-    if (c == '+' || c == '-' || std::isdigit(uc) || (c == '.' && std::isdigit(current_char_as_uc(m_buffer, m_pos+1))))
+    // Number or FixedNumber
+    if (c == '+' || c == '-' || std::isdigit(uc) || (c == '.' && std::isdigit( current_char_as_uc(m_buffer, m_pos+1) )))
     {
+        Type_e token_type = Type_e::FixedNumber; // Let's default to this and change it when we find a '.'
         size_t start = m_pos;
 
         if (c == '+' || c == '-')
@@ -293,6 +409,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         if (current_char(m_buffer, m_pos) == '.')
         {
+            token_type = Type_e::Number;
             ++m_pos;
             while ( std::isdigit( current_char_as_uc(m_buffer, m_pos) ) )
                 ++m_pos;
@@ -303,7 +420,46 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append(m_buffer.data() + start, len);
 
-        return Token{ Type_e::Number, StringView(m_storage.data() + ofs, len), token_pos };
+        if ( token_type == FixedNumber )
+        {
+            const char *number_start = reinterpret_cast<const char *>(m_buffer.data() + start);
+            const char *number_end   = reinterpret_cast<const char *>(m_buffer.data() + m_pos);
+            int64_t     result;
+            std::from_chars_result conversion = std::from_chars(number_start, number_end, result, 10);
+
+            if ( conversion.ec == std::errc() )
+            {
+                // ASSUME: All characters matched
+                return make_fixednumber( StringView(m_storage.data() + ofs, len), token_pos, result );
+            }
+            else
+            {
+                // Error
+                // TODO: Implement
+                assert(false);
+            }
+        }
+        else
+        {
+            assert(token_type == Number);
+
+            const char *number_start = reinterpret_cast<const char *>(m_buffer.data() + start);
+            const char *number_end   = reinterpret_cast<const char *>(m_buffer.data() + m_pos);
+            double      result;
+            std::from_chars_result conversion = std::from_chars(number_start, number_end, result );
+
+            if ( conversion.ec == std::errc() )
+            {
+                // ASSUME: All characters matched
+                return make_number( StringView(m_storage.data() + ofs, len), token_pos, result );
+            }
+            else
+            {
+                // Error
+                // TODO: Implement
+                assert(false);
+            }
+        }
     }
 
     // Symbol
@@ -322,7 +478,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append( uppercased_symbol );
 
-        return Token{ Type_e::Symbol, StringView(m_storage.data() + ofs, len), token_pos };
+        return make_symbol( StringView(m_storage.data() + ofs, len), token_pos );
     }
 
     // Fallback: treat unknown single byte as symbol
@@ -332,5 +488,5 @@ Tokenizer::Token Tokenizer::next_token()
 
     m_storage.append(m_buffer.data() + token_pos, 1);
 
-    return Token{ Type_e::Symbol, StringView(m_storage.data() + ofs, 1), token_pos };
+    return make_symbol( StringView(m_storage.data() + ofs, 1), token_pos );
 }

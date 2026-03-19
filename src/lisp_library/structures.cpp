@@ -30,6 +30,10 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         {
             std::print(output, "{}", d);
         }
+        void operator()(int64_t fixednum) const
+        {
+            std::print(output, "{}", fixednum);
+        }
         void operator()(char32_t c) const
         {
             // naive conversion of codepoint to utf-8 bytes is not implemented;
