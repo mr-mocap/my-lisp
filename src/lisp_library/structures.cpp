@@ -43,6 +43,10 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
             else
                 std::print(output, "Printing characters outside of ASCII range not implemented yet");
         }
+        void operator()(FunctionPtr) const
+        {
+            std::print(output, "FunctionPtr");
+        }
         void operator()(const ConsCellPtr &cons) const
         {
             // Dotted pair?

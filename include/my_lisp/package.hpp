@@ -2,6 +2,7 @@
 
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/text_io.hpp>
+#include <my_lisp/sexpression.hpp>
 #include <vector>
 #include <algorithm>
 
@@ -36,6 +37,32 @@ public:
     OptionalSymbol find_symbol(StringView symbol_name) const
     {
         return m_symbol_table.find_symbol(symbol_name);
+    }
+
+    const SExpression *find_symbol_value(Symbol s) const
+    {
+        auto iter = m_symbol_values.find(s);
+
+        if ( iter == m_symbol_values.end() )
+            return nullptr;
+        return &iter->second;
+    }
+
+    SExpression *find_symbol_value(Symbol s)
+    {
+        auto iter = m_symbol_values.find(s);
+
+        if ( iter == m_symbol_values.end() )
+            return nullptr;
+        return &iter->second;
+    }
+
+    void set_symbol_value(Symbol s, const SExpression &sexpression)
+    {
+        if ( SExpression *se = find_symbol_value(s) )
+            *se = sexpression;
+        else
+            m_symbol_values.emplace(s, sexpression);
     }
 
     StringView symbol_name(Symbol s) const
@@ -121,8 +148,19 @@ public:
         return m_shadowing_names;
     }
 protected:
+    struct SymbolComparator
+    {
+        using is_transparent = void;// Enable heterogeneous lookup
+
+        constexpr bool operator()(const Symbol &lhs, const Symbol &rhs) const noexcept
+        {
+            return lhs.value < rhs.value;
+        }
+    };
+
     String              m_name;
     SymbolTable         m_symbol_table;
+    std::map<Symbol, SExpression, SymbolComparator> m_symbol_values;
     std::vector<String> m_uses_packages;
     std::vector<String> m_exported_names;
     std::vector<String> m_shadowing_names;

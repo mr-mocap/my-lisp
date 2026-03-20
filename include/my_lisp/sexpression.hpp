@@ -17,10 +17,19 @@ struct SExpression
         Number,
         FixedNumer,
         Char,
+        Function,
         ConsCell
     };
 
-    std::variant<::Nil, ::True, ::String, ::Symbol, double, int64_t, char32_t, ::ConsCellPtr> value;
+    std::variant<::Nil,
+                 ::True,
+                 ::String,
+                 ::Symbol,
+                   double,
+                   int64_t,
+                   char32_t,
+                 ::FunctionPtr,
+                 ::ConsCellPtr> value;
 
     constexpr Type type() const
     {
@@ -60,6 +69,11 @@ struct SExpression
     constexpr char32_t asChar()
     {
         return std::get<char32_t>(value);
+    }
+
+    FunctionPtr asFunction()
+    {
+        return std::get<FunctionPtr>(value);
     }
 
     ::ConsCellPtr asConsCellPtr()
