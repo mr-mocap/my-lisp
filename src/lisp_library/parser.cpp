@@ -3,6 +3,7 @@
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/text_io.hpp>
 #include <my_lisp/tokenizer.hpp>
+#include <my_lisp/helper_functions.hpp>
 #include <expected>
 
 
@@ -13,11 +14,6 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 // - Symbols are interned via a global SymbolTable instance (simple).
 // - Numbers and booleans are represented as Symbols for now (placeholder)
 // - Strings become ::String
-
-static SExpression make_nil()
-{
-    return { .value = ::Nil{} };
-}
 
 static SExpression make_string(StringView sv)
 {
@@ -68,11 +64,6 @@ static ParseResult make_char(StringView sv)
     return ParseResult( SExpression{ .value = static_cast<char32_t>(sv[0]) } );
 }
 
-static SExpression make_cons(SExpression car, SExpression cdr)
-{
-    return { .value = cons( std::move(car), std::move(cdr) ) };
-}
-
 // Parse the rest of a list given the first token of the first element.
 static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environment &environment)
 {
@@ -96,7 +87,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
                 Tokenizer::Token nested_first = tokenizer.next_token();
 
                 if (nested_first.type == Tokenizer::Type_e::RightParen)
-                    return ParseResult( make_nil() );
+                    return ParseResult( Helpers::make_nil() );
                 return parse_list(tokenizer, nested_first, environment);
         }
         case Tokenizer::Type_e::Symbol:
@@ -130,7 +121,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
 
             SExpression qsym = make_symbol(u8"quote", environment);
 
-            return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
+            return ParseResult( Helpers::make_cons( qsym, Helpers::make_cons( quoted_res.value(), Helpers::make_nil() ) ) );
         }
         default:
             return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position(), "Unexpected token while parsing element"});
@@ -154,7 +145,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
 
     if (next.type == Tokenizer::Type_e::RightParen)
     {
-        return ParseResult( make_cons( head, make_nil() ) );
+        return ParseResult( Helpers::make_cons( head, Helpers::make_nil() ) );
     }
     if (next.type == Tokenizer::Type_e::Dot)
     {
@@ -168,7 +159,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
         if (closing.type != Tokenizer::Type_e::RightParen)
             return std::unexpected( ParseError{ ParseError::MalformedDottedPair, closing.position(), "Missing closing parenthesis after dotted pair"});
 
-        return ParseResult( make_cons( head, cdr_res.value() ) );
+        return ParseResult( Helpers::make_cons( head, cdr_res.value() ) );
     }
 
     auto rest_res = parse_list(tokenizer, next, environment);
@@ -176,7 +167,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
     if (!rest_res)
         return std::unexpected( rest_res.error() );
 
-    return ParseResult( make_cons( head, rest_res.value() ) );
+    return ParseResult( Helpers::make_cons( head, rest_res.value() ) );
 }
 
 
@@ -196,7 +187,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         Tokenizer::Token next = tokenizer.next_token();
 
         if (next.type == Tokenizer::Type_e::RightParen)
-            return ParseResult( make_nil() );
+            return ParseResult( Helpers::make_nil() );
 
         return parse_list(tokenizer, next, environment);
     }
@@ -225,7 +216,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 
         SExpression qsym = make_symbol(u8"quote", environment);
 
-        return ParseResult( make_cons( qsym, make_cons( quoted_res.value(), make_nil() ) ) );
+        return ParseResult( Helpers::make_cons( qsym, Helpers::make_cons( quoted_res.value(), Helpers::make_nil() ) ) );
     }
     default:
         // Unexpected token at top-level
