@@ -3,7 +3,6 @@
 #include <my_lisp/symboltable.hpp>
 #include <my_lisp/text_io.hpp>
 #include <my_lisp/tokenizer.hpp>
-#include <my_lisp/helper_functions.hpp>
 #include <expected>
 
 
@@ -15,19 +14,14 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 // - Numbers and booleans are represented as Symbols for now (placeholder)
 // - Strings become ::String
 
-static SExpression make_string(StringView sv)
-{
-    return { .value = ::String(sv) };
-}
-
 static SExpression make_symbol(StringView sv, Environment &environment)
 {
     OptionalSymbol sym_opt = environment.find_symbol(sv);
 
     if ( sym_opt )
-        return { .value = sym_opt.value() };
+        return { sym_opt.value() };
     else
-        return { .value = environment.current_package()->intern(sv) };
+        return { environment.current_package()->intern(sv) };
 }
 
 // Try to parse a numeric literal. On failure return a ParseError instead of
@@ -46,7 +40,7 @@ static ParseResult make_number(StringView sv)
         if (idx != bytes.size())
             return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
 
-        return ParseResult( SExpression{ .value = v } );
+        return ParseResult( SExpression{ v } );
     }
     catch (...)
     {
@@ -61,7 +55,7 @@ static ParseResult make_char(StringView sv)
 
     // Very simple: take first byte as character. Proper UTF-8 decoding
     // can be added later.
-    return ParseResult( SExpression{ .value = static_cast<char32_t>(sv[0]) } );
+    return ParseResult( SExpression{ static_cast<Char>(sv[0]) } );
 }
 
 // Parse the rest of a list given the first token of the first element.
@@ -87,14 +81,14 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
                 Tokenizer::Token nested_first = tokenizer.next_token();
 
                 if (nested_first.type == Tokenizer::Type_e::RightParen)
-                    return ParseResult( Helpers::make_nil() );
+                    return ParseResult( SExpression::make_nil() );
                 return parse_list(tokenizer, nested_first, environment);
         }
         case Tokenizer::Type_e::Symbol:
             return ParseResult( make_symbol(tt.text(), environment));
 
         case Tokenizer::Type_e::String:
-            return ParseResult( make_string(tt.text()) );
+            return ParseResult( SExpression(tt.text()) );
 
         case Tokenizer::Type_e::Number:
         {
@@ -121,7 +115,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
 
             SExpression qsym = make_symbol(u8"quote", environment);
 
-            return ParseResult( Helpers::make_cons( qsym, Helpers::make_cons( quoted_res.value(), Helpers::make_nil() ) ) );
+            return ParseResult( SExpression::make_cons( qsym, SExpression::make_cons( quoted_res.value(), SExpression::make_nil() ) ) );
         }
         default:
             return std::unexpected( ParseError{ ParseError::UnexpectedToken, tt.position(), "Unexpected token while parsing element"});
@@ -145,7 +139,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
 
     if (next.type == Tokenizer::Type_e::RightParen)
     {
-        return ParseResult( Helpers::make_cons( head, Helpers::make_nil() ) );
+        return ParseResult( SExpression::make_cons( head, SExpression::make_nil() ) );
     }
     if (next.type == Tokenizer::Type_e::Dot)
     {
@@ -159,7 +153,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
         if (closing.type != Tokenizer::Type_e::RightParen)
             return std::unexpected( ParseError{ ParseError::MalformedDottedPair, closing.position(), "Missing closing parenthesis after dotted pair"});
 
-        return ParseResult( Helpers::make_cons( head, cdr_res.value() ) );
+        return ParseResult( SExpression::make_cons( head, cdr_res.value() ) );
     }
 
     auto rest_res = parse_list(tokenizer, next, environment);
@@ -167,7 +161,7 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
     if (!rest_res)
         return std::unexpected( rest_res.error() );
 
-    return ParseResult( Helpers::make_cons( head, rest_res.value() ) );
+    return ParseResult( SExpression::make_cons( head, rest_res.value() ) );
 }
 
 
@@ -187,7 +181,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         Tokenizer::Token next = tokenizer.next_token();
 
         if (next.type == Tokenizer::Type_e::RightParen)
-            return ParseResult( Helpers::make_nil() );
+            return ParseResult( SExpression::make_nil() );
 
         return parse_list(tokenizer, next, environment);
     }
@@ -199,7 +193,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         return ParseResult( make_symbol(token.text(), environment) );
 
     case Tokenizer::Type_e::String:
-        return ParseResult( make_string(token.text()) );
+        return ParseResult( SExpression(token.text()) );
 
     case Tokenizer::Type_e::Number:
         return make_number(token.text());
@@ -216,7 +210,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 
         SExpression qsym = make_symbol(u8"quote", environment);
 
-        return ParseResult( Helpers::make_cons( qsym, Helpers::make_cons( quoted_res.value(), Helpers::make_nil() ) ) );
+        return ParseResult( SExpression::make_cons( qsym, SExpression::make_cons( quoted_res.value(), SExpression::make_nil() ) ) );
     }
     default:
         // Unexpected token at top-level

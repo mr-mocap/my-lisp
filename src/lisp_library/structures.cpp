@@ -26,15 +26,15 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
 
             std::print(output, "{}", (sym_name.empty()) ? "NIL" : text_io::to_string_view(sym_name));
         }
-        void operator()(double d) const
+        void operator()(Number d) const
         {
             std::print(output, "{}", d);
         }
-        void operator()(int64_t fixednum) const
+        void operator()(FixedNumber fixednum) const
         {
             std::print(output, "{}", fixednum);
         }
-        void operator()(char32_t c) const
+        void operator()(Char c) const
         {
             // naive conversion of codepoint to utf-8 bytes is not implemented;
             // print as numeric value for now
@@ -43,11 +43,11 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
             else
                 std::print(output, "Printing characters outside of ASCII range not implemented yet");
         }
-        void operator()(FunctionPtr) const
+        void operator()(Function) const
         {
             std::print(output, "FunctionPtr");
         }
-        void operator()(const ConsCellPtr &cons) const
+        void operator()(::ConsCellPtr cons) const
         {
             // Dotted pair?
             if ( cons->isDottedPair() )
@@ -91,7 +91,7 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
  *        that we only make one copy/move per argument, regardless of whether the caller has an
  *        lvalue or rvalue.
  */
-ConsCellPtr cons(SExpression first, SExpression rest)
+::ConsCellPtr cons(SExpression first, SExpression rest)
 {
   auto cell = std::make_shared<ConsCell>( std::move(first), std::move(rest) );
 

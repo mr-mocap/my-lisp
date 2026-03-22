@@ -5,6 +5,16 @@
 
 struct SExpression
 {
+    using VariantType = std::variant<::Nil,
+                                     ::True,
+                                     ::String,
+                                     ::Symbol,
+                                     ::Number,
+                                     ::FixedNumber,
+                                     ::Char,
+                                     ::Function,
+                                     ::ConsCellPtr>;
+
     // NOTE: The order of the types in this variant is important,
     // as the type() function relies on the index of the variant to determine
     // the type of the SExpression.
@@ -15,21 +25,105 @@ struct SExpression
         String,
         Symbol,
         Number,
-        FixedNumer,
+        FixedNumber,
         Char,
         Function,
         ConsCell
     };
 
-    std::variant<::Nil,
-                 ::True,
-                 ::String,
-                 ::Symbol,
-                   double,
-                   int64_t,
-                   char32_t,
-                 ::FunctionPtr,
-                 ::ConsCellPtr> value;
+    constexpr SExpression() : value( ::Nil{} ) {}
+    constexpr SExpression(::Nil         parameter) : value( parameter ) { }
+    constexpr SExpression(::True        parameter) : value( parameter ) { }
+    explicit constexpr SExpression(::String      parameter) : value( std::move(parameter) ) { }
+    constexpr SExpression(::StringView  parameter) : value( ::String(parameter) ) { }
+    constexpr SExpression(::Symbol      parameter) : value( std::move(parameter) ) { }
+    constexpr SExpression(::Number      parameter) : value( parameter ) { }
+    constexpr SExpression(::FixedNumber parameter) : value( parameter ) { }
+    constexpr SExpression(::Char        parameter) : value( parameter ) { }
+    constexpr SExpression(::Function    parameter) : value( std::move(parameter) ) { }
+    constexpr SExpression(::ConsCellPtr parameter) : value( std::move(parameter) ) { }
+
+    static constexpr SExpression make_nil()  { return SExpression{}; }
+    static constexpr SExpression make_true() { return SExpression{ ::True{} }; }
+
+    static constexpr SExpression make_function(::Function func)
+    {
+        return { std::move(func) };
+    }
+
+    /**
+     *  @note Use "will-move-from" parameters to avoid unnecessary copies.
+     *        If the caller has an lvalue, then a copy will be made for the paramter.
+     *        If the caller has an rvalue, then the move constructor will be used for the parameter.
+     *        Then we just use move internally to move the parameters into the ConsCell, guaranteeing
+     *        that we only make one copy/move per argument, regardless of whether the caller has an
+     *        lvalue or rvalue.
+     */
+    static SExpression make_cons(SExpression first, SExpression rest)
+    {
+      return { std::make_shared<::ConsCell>( std::move(first), std::move(rest) ) };
+    } 
+
+    SExpression &operator =(const SExpression &other)
+    {
+        if ( &other != this )
+            value = other.value;
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::Nil parameter)
+    {
+        value.emplace<Type::Nil>( std::move(parameter) );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::True parameter)
+    {
+        value.emplace<Type::True>( std::move(parameter) );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::StringView parameter)
+    {
+        value.emplace<Type::String>( parameter );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::Symbol parameter)
+    {
+        value.emplace<Type::Symbol>( std::move(parameter) );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::Number parameter)
+    {
+        value.emplace<Type::Number>( parameter );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::FixedNumber parameter)
+    {
+        value.emplace<Type::FixedNumber>( parameter );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::Char parameter)
+    {
+        value.emplace<Type::Char>( parameter );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::Function parameter)
+    {
+        value.emplace<Type::Function>( parameter );
+        return *this;
+    }
+
+    constexpr SExpression &operator =(::ConsCellPtr parameter)
+    {
+        value.emplace<Type::ConsCell>( std::move(parameter) );
+        return *this;
+    }
 
     constexpr Type type() const
     {
@@ -56,30 +150,32 @@ struct SExpression
         return std::get<::Symbol>(value);
     }
 
-    constexpr double asNumber()
+    constexpr ::Number asNumber()
     {
-        return std::get<double>(value);
+        return std::get<::Number>(value);
     }
 
-    constexpr int64_t asFixedNumber()
+    constexpr ::FixedNumber asFixedNumber()
     {
-        return std::get<int64_t>(value);
+        return std::get<::FixedNumber>(value);
     }
 
-    constexpr char32_t asChar()
+    constexpr ::Char asChar()
     {
-        return std::get<char32_t>(value);
+        return std::get<::Char>(value);
     }
 
-    FunctionPtr asFunction()
+    constexpr ::Function asFunction()
     {
-        return std::get<FunctionPtr>(value);
+        return std::get<::Function>(value);
     }
 
     ::ConsCellPtr asConsCellPtr()
     {
         return std::get<::ConsCellPtr>(value);
     }
+
+    VariantType value;
 };
 
 struct ConsCell
