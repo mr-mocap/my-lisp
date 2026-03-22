@@ -20,6 +20,7 @@ public:
         Comment,
         Dot,
         Char,
+        Eol,
         Eof
     };
 

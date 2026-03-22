@@ -3,6 +3,28 @@
 #include <iostream>
 #include <print>
 
+bool rep_line(Reader &reader, BasicLispSetup &lisp_machine)
+{
+    while ( true )
+    {
+        ParseResult result = reader.read_expression(lisp_machine.environment());
+
+        if ( !result )
+        {
+            if ( result.error().kind == ParseError::EOL )
+            {
+                std::println();
+                break;
+            }
+
+            std::println("Parse error: {} at position {}", result.error().message, result.error().position);
+            return false; // Don't continue
+        }
+        std::print(" ");
+        print( result.value(), lisp_machine.environment(), std::cout );
+    }
+    return true; // Continue
+}
 
 int main(void)
 {
@@ -16,20 +38,10 @@ int main(void)
     {
         PackagePtr current_package = lisp_machine.environment().current_package();
 
-        std::print("{} >", text_io::to_string_view(current_package->name()));
+        std::print("{} > ", text_io::to_string_view(current_package->name()));
 
-        ParseResult result = reader.read_expression(lisp_machine.environment());
-
-        if ( result )
-        {
-            print( result.value(), lisp_machine.environment(), std::cout );
-            std::cout << std::endl;
-        }
-        else
-        {
-            std::cout << "Parse error: " << result.error().message <<
-                         " at position " << result.error().position << std::endl;
-        }
+        if ( !rep_line(reader, lisp_machine) )
+            break;
     }
 
     return EXIT_SUCCESS;

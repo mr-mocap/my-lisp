@@ -26,15 +26,41 @@ static SExpression make_symbol(StringView sv, Environment &environment)
 
 // Try to parse a numeric literal. On failure return a ParseError instead of
 // silently returning 0.0.
-static ParseResult make_number(StringView sv)
+static ParseResult make_number(const Tokenizer::NumberData &data)
 {
+    return ParseResult( SExpression{ data.value } );
+#if 0
     // Convert u8string_view to std::string for parsing
-    std::string bytes = text_io::to_string(sv);
+    std::string bytes = text_io::to_string(data.text);
 
     try
     {
         size_t idx = 0;
-        double v = std::stod(bytes, &idx);
+        Number v = std::stod(bytes, &idx);
+
+        // Ensure the entire token was consumed by the number parser
+        if (idx != bytes.size())
+            return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
+
+    }
+    catch (...)
+    {
+        return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
+    }
+#endif
+}
+
+static ParseResult make_fixednumber(const Tokenizer::FixedNumberData &data)
+{
+    return ParseResult( SExpression{ data.value } );
+#if 0
+    // Convert u8string_view to std::string for parsing
+    std::string bytes = text_io::to_string(data.text);
+
+    try
+    {
+        size_t idx = 0;
+        Number v = std::stoi(bytes, &idx);
 
         // Ensure the entire token was consumed by the number parser
         if (idx != bytes.size())
@@ -46,6 +72,7 @@ static ParseResult make_number(StringView sv)
     {
         return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
     }
+#endif
 }
 
 static ParseResult make_char(StringView sv)
@@ -92,7 +119,15 @@ static ParseResult parse_list(Tokenizer &tokenizer, Tokenizer::Token t, Environm
 
         case Tokenizer::Type_e::Number:
         {
-            auto num_res = make_number(tt.text());
+            auto num_res = make_number( tt.asNumberData() );
+
+            if (!num_res)
+                return std::unexpected( num_res.error() );
+            return num_res;
+        }
+        case Tokenizer::Type_e::FixedNumber:
+        {
+            auto num_res = make_fixednumber( tt.asFixedNumberData() );
 
             if (!num_res)
                 return std::unexpected( num_res.error() );
@@ -175,6 +210,9 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         // No expression available at top-level: treat as EOF
         return std::unexpected( ParseError{ ParseError::UnexpectedEOF, token.position(), "Unexpected EOF at top-level"});
 
+    case Tokenizer::Type_e::Eol:
+        return std::unexpected( ParseError{ ParseError::EOL, token.position(), "End-Of-Line (need more input)"});
+
     case Tokenizer::Type_e::LeftParen:
     {
         // If next token is RightParen then return empty list (NIL)
@@ -196,7 +234,10 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         return ParseResult( SExpression(token.text()) );
 
     case Tokenizer::Type_e::Number:
-        return make_number(token.text());
+        return make_number( token.asNumberData() );
+
+    case Tokenizer::Type_e::FixedNumber:
+        return make_fixednumber( token.asFixedNumberData() );
 
     case Tokenizer::Type_e::Char:
         return make_char(token.text());
@@ -220,7 +261,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 
 ParseResult read_expression(Tokenizer &tokenizer, Environment &environment)
 {
-    auto res = read_expression_impl(tokenizer, environment);
+    ParseResult res = read_expression_impl(tokenizer, environment);
 
     if (!res)
         return std::unexpected( res.error() );
