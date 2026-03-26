@@ -425,7 +425,12 @@ Tokenizer::Token Tokenizer::next_token()
             const char *number_start = reinterpret_cast<const char *>(m_buffer.data() + start);
             const char *number_end   = reinterpret_cast<const char *>(m_buffer.data() + m_pos);
             int64_t     result;
-            std::from_chars_result conversion = std::from_chars(number_start, number_end, result, 10);
+            std::from_chars_result conversion;
+
+            if ( c == '+' )
+                conversion = std::from_chars(number_start + 1, number_end, result, 10); // from_chars does NOT handle the '+', so remove it from the parse!
+            else
+                conversion = std::from_chars(number_start, number_end, result, 10);
 
             if ( conversion.ec == std::errc() )
             {
@@ -436,6 +441,7 @@ Tokenizer::Token Tokenizer::next_token()
             {
                 // Error
                 // TODO: Implement
+                // Unparsable Number!
                 assert(false);
             }
         }

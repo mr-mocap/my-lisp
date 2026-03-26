@@ -28,6 +28,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8"(");
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Right Parentheses")
     {
         iss.str(")");
@@ -38,6 +39,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8")");
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Symbol")
     {
         iss.str("symbol");
@@ -48,60 +50,121 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8"SYMBOL");
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Number")
     {
-        iss.str("42.0");
+        SECTION("Preceding decimal")
+        {
+            iss.str(".1");
 
-        Tokenizer::Token token = tokenizer.next_token();
+            Tokenizer::Token token = tokenizer.next_token();
 
-        REQUIRE(token.type == Tokenizer::Type_e::Number);
-        REQUIRE(token.text() == u8"42.0");
-        REQUIRE(token.position() == 0);
+            REQUIRE(token.type == Tokenizer::Type_e::Number);
+            REQUIRE(token.text() == u8".1");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asNumberData().value == 0.1);
+        }
+
+        SECTION("Trailing decimal")
+        {
+            iss.str("42.");
+
+            Tokenizer::Token token = tokenizer.next_token();
+
+            REQUIRE(token.type == Tokenizer::Type_e::Number);
+            REQUIRE(token.text() == u8"42.");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asNumberData().value == 42.0);
+        }
+
+        SECTION("Decimal inside digits")
+        {
+            iss.str("42.0");
+
+            Tokenizer::Token token = tokenizer.next_token();
+
+            REQUIRE(token.type == Tokenizer::Type_e::Number);
+            REQUIRE(token.text() == u8"42.0");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asNumberData().value == 42.0);
+        }
     }
+
     SECTION("FixedNumber")
     {
-        iss.str("42");
+        SECTION("No Sign returns a positive number")
+        {
+            iss.str("42");
 
-        Tokenizer::Token token = tokenizer.next_token();
+            Tokenizer::Token token = tokenizer.next_token();
 
-        REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
-        REQUIRE(token.text() == u8"42");
-        REQUIRE(token.position() == 0);
-        REQUIRE(token.asFixedNumberData().value == 42);
+            REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
+            REQUIRE(token.text() == u8"42");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asFixedNumberData().value == 42);
+        }
+
+        SECTION("Preceding plus returns a positive number")
+        {
+            iss.str("+42");
+
+            Tokenizer::Token token = tokenizer.next_token();
+
+            REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
+            REQUIRE(token.text() == u8"+42");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asFixedNumberData().value == 42);
+        }
+
+        SECTION("Preceding minus returns a negative number")
+        {
+            iss.str("-42");
+
+            Tokenizer::Token token = tokenizer.next_token();
+
+            REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
+            REQUIRE(token.text() == u8"-42");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asFixedNumberData().value == -42);
+        }
+
+        SECTION("With Binary specifier")
+        {
+            iss.str("#b1111");
+
+            Tokenizer::Token token = tokenizer.next_token();
+
+            REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
+            REQUIRE(token.text() == u8"1111");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asFixedNumberData().value == 15);
+        }
+
+        SECTION("With Octal Specifier")
+        {
+            iss.str("#o777");
+
+            Tokenizer::Token token = tokenizer.next_token();
+
+            REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
+            REQUIRE(token.text() == u8"777");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asFixedNumberData().value == 511);
+        }
+
+        SECTION("FixedNumber - Hex")
+        {
+            iss.str("#xAB");
+
+            Tokenizer::Token token = tokenizer.next_token();
+
+            REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
+            REQUIRE(token.text() == u8"AB");
+            REQUIRE(token.position() == 0);
+            REQUIRE(token.asFixedNumberData().value == 171);
+        }
     }
-    SECTION("FixedNumber - Binary")
-    {
-        iss.str("#b1111");
 
-        Tokenizer::Token token = tokenizer.next_token();
-
-        REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
-        REQUIRE(token.text() == u8"1111");
-        REQUIRE(token.position() == 0);
-        REQUIRE(token.asFixedNumberData().value == 15);
-    }
-    SECTION("FixedNumber - Octal")
-    {
-        iss.str("#o777");
-
-        Tokenizer::Token token = tokenizer.next_token();
-
-        REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
-        REQUIRE(token.text() == u8"777");
-        REQUIRE(token.position() == 0);
-        REQUIRE(token.asFixedNumberData().value == 511);
-    }
-    SECTION("FixedNumber - Hex")
-    {
-        iss.str("#xAB");
-
-        Tokenizer::Token token = tokenizer.next_token();
-
-        REQUIRE(token.type == Tokenizer::Type_e::FixedNumber);
-        REQUIRE(token.text() == u8"AB");
-        REQUIRE(token.position() == 0);
-        REQUIRE(token.asFixedNumberData().value == 171);
-    }
     SECTION("String")
     {
         iss.str("\"This is a string\"");
@@ -112,6 +175,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8"This is a string");
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Quote")
     {
         iss.str("'");
@@ -122,6 +186,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8"'");
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Comment")
     {
         iss.str("; comment here...");
@@ -132,6 +197,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8"; comment here...");
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Dot")
     {
         iss.str(".");
@@ -142,6 +208,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8".");
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Char")
     {
         iss.str("#\\A"); // "\\" is a single backslash character in the input,
@@ -153,6 +220,7 @@ TEST_CASE("All tokens can be read and represented", "[Tokenizer]")
         REQUIRE(token.text() == u8"A"); // Just the character after "#\\"
         REQUIRE(token.position() == 0);
     }
+
     SECTION("Eof")
     {
         iss.str("");

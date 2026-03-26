@@ -2,6 +2,7 @@
 
 #include <my_lisp/sexpression.hpp>
 
+class Environment;
 
 namespace PredefinedFunctions
 {
@@ -12,33 +13,33 @@ namespace PredefinedFunctions
  *
  *  The following predicates check for specific data-types.
  */
-SExpression null(SExpression parameter);
+SExpression null(Environment &current_environment, SExpression parameter);
 
-SExpression symbolp(SExpression expression);
+SExpression symbolp(Environment &current_environment, SExpression expression);
 
-SExpression atom(SExpression expression);
+SExpression atom(Environment &current_environment, SExpression expression);
 
-SExpression consp(SExpression parameter);
+SExpression consp(Environment &current_environment, SExpression parameter);
 
-SExpression listp(SExpression parameter);
+SExpression listp(Environment &current_environment, SExpression parameter);
 
-SExpression numberp(SExpression parameter);
+SExpression numberp(Environment &current_environment, SExpression parameter);
 
-SExpression integerp(SExpression parameter);
+SExpression integerp(Environment &current_environment, SExpression parameter);
 
-SExpression rationalp(SExpression parameter);
+SExpression rationalp(Environment &current_environment, SExpression parameter);
 
-SExpression floatp(SExpression parameter);
+SExpression floatp(Environment &current_environment, SExpression parameter);
 
-SExpression realp(SExpression parameter);
+SExpression realp(Environment &current_environment, SExpression parameter);
 
-SExpression complexp(SExpression parameter);
+SExpression complexp(Environment &current_environment, SExpression parameter);
 
-SExpression characterp(SExpression parameter);
+SExpression characterp(Environment &current_environment, SExpression parameter);
 
-SExpression stringp(SExpression parameter);
+SExpression stringp(Environment &current_environment, SExpression parameter);
 
-SExpression functionp(SExpression parameter);
+SExpression functionp(Environment &current_environment, SExpression parameter);
 
 #if 0
 SExpression bit-vector-p(SExpression parameter);
@@ -71,7 +72,7 @@ SExpression commonp(SExpression parameter);
  *
  *  The following functions perform logical operations.
  */
-SExpression logical_not(SExpression parameter); // "not" as it is in CommonLisp
+SExpression logical_not(Environment &current_environment, SExpression parameter); // "not" as it is in CommonLisp
 //SExpression and(SExpression left, SExpression right); // Macro
 //SExpression or(SExpression left, SExpression right); // Macro
 ///@}
