@@ -11,7 +11,6 @@ struct ParseError
         UnterminatedList,
         MalformedDottedPair,
         UnexpectedEOF,
-        EOL,
         UnexpectedToken
     };
 

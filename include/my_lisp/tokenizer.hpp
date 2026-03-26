@@ -20,7 +20,7 @@ public:
         Comment,
         Dot,
         Char,
-        Eol,
+        NeedMoreInput,
         Eof
     };
 
@@ -43,7 +43,7 @@ public:
     struct NumberData
     {
         StringView text;
-        size_t     position;
+        size_t     position = 0;
         double     value = 0.0;
     };
 

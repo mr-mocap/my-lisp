@@ -208,10 +208,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
     {
     case Tokenizer::Type_e::Eof:
         // No expression available at top-level: treat as EOF
-        return std::unexpected( ParseError{ ParseError::UnexpectedEOF, token.position(), "Unexpected EOF at top-level"});
-
-    case Tokenizer::Type_e::Eol:
-        return std::unexpected( ParseError{ ParseError::EOL, token.position(), "End-Of-Line (need more input)"});
+        return std::unexpected( ParseError{ ParseError::UnexpectedEOF, token.position(), "EXIT at top-level"});
 
     case Tokenizer::Type_e::LeftParen:
     {

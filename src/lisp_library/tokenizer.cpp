@@ -113,11 +113,6 @@ Tokenizer::Token make_char(StringView sv, size_t pos)
     return make_common(Tokenizer::Type_e::Char, sv, pos);
 }
 
-Tokenizer::Token make_eol(size_t pos)
-{
-    return make_common(Tokenizer::Type_e::Eol, StringView(), pos);
-}
-
 Tokenizer::Token make_eof(size_t pos)
 {
     return make_common(Tokenizer::Type_e::Eof, StringView(), pos);
@@ -226,14 +221,6 @@ Tokenizer::Token Tokenizer::next_token()
             m_storage.append( StringView(m_buffer.data() + ofs, m_pos - comment_start) );
 
             return make_comment( StringView(m_storage.data() + ofs, m_storage.size()), comment_start );
-        }
-
-        if ( c == '\n' )
-        {
-            m_buffer.clear();
-            m_storage.clear();
-            m_pos = 0;
-            return make_eol( m_pos );
         }
 
         if ( std::isspace(static_cast<unsigned char>(c)) )
@@ -491,6 +478,8 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append( uppercased_symbol );
 
+        if ( uppercased_symbol == u8"EXIT" )
+            return make_eof( m_pos );
         return make_symbol( StringView(m_storage.data() + ofs, len), token_pos );
     }
 
