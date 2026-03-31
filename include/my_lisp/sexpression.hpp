@@ -190,8 +190,7 @@ struct ConsCell
 
     bool isEndListSegment() const
     {
-        return (car.type() != SExpression::ConsCell && car.type() != SExpression::Nil) &&
-                cdr.type() == SExpression::Nil;
+        return car.type() != SExpression::Nil && cdr.type() == SExpression::Nil;
     }
 
     bool isDottedPair() const
