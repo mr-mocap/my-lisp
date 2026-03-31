@@ -9,10 +9,7 @@ include(CheckCXXSourceCompiles)
 
 macro(my_lisp_supports_sanitizers)
   # Emscripten doesn't support sanitizers
-  if(EMSCRIPTEN)
-    set(SUPPORTS_UBSAN OFF)
-    set(SUPPORTS_ASAN OFF)
-  elseif((CMAKE_CXX_COMPILER_ID MATCHES ".*Clang.*" OR CMAKE_CXX_COMPILER_ID MATCHES ".*GNU.*") AND NOT WIN32)
+  if((CMAKE_CXX_COMPILER_ID MATCHES ".*Clang.*" OR CMAKE_CXX_COMPILER_ID MATCHES ".*GNU.*") AND NOT WIN32)
 
     message(STATUS "Sanity checking UndefinedBehaviorSanitizer, it should be supported on this platform")
     set(TEST_PROGRAM "int main() { return 0; }")
@@ -178,17 +175,6 @@ macro(my_lisp_local_options)
 
   include(cmake/Linker.cmake)
   # Must configure each target with linker options, we're avoiding setting it globally for now
-
-  if(NOT EMSCRIPTEN)
-    include(cmake/Sanitizers.cmake)
-    my_lisp_enable_sanitizers(
-      my_lisp_options
-      ${my_lisp_ENABLE_SANITIZER_ADDRESS}
-      ${my_lisp_ENABLE_SANITIZER_LEAK}
-      ${my_lisp_ENABLE_SANITIZER_UNDEFINED}
-      ${my_lisp_ENABLE_SANITIZER_THREAD}
-      ${my_lisp_ENABLE_SANITIZER_MEMORY})
-  endif()
 
   set_target_properties(my_lisp_options PROPERTIES UNITY_BUILD ${my_lisp_ENABLE_UNITY_BUILD})
 
