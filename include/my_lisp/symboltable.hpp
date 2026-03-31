@@ -25,8 +25,8 @@ class SymbolTable
 public:
     SymbolTable() = default;
 
-    [[nodiscard]] Symbol intern(StringView str) noexcept;
-                  void   intern_with_no_retval(StringView str) noexcept;
+    [[nodiscard]] Symbol &intern(StringView str) noexcept;
+                  void    intern_with_no_retval(StringView str) noexcept;
 
     void unintern(Symbol s) noexcept;
 

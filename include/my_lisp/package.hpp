@@ -72,7 +72,7 @@ public:
 
     Symbol intern(StringView symbol_name)
     {
-        Symbol new_symbol = m_symbol_table.intern(symbol_name);
+        Symbol &new_symbol = m_symbol_table.intern(symbol_name);
 
         new_symbol.home_package = name();
         return new_symbol;

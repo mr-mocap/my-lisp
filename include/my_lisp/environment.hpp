@@ -46,6 +46,11 @@ public:
         return m_current_package.lock();
     }
 
+    PackagePtr current_package() noexcept
+    {
+        return m_current_package.lock();
+    }
+
 #if 0
     const Package *find_package(StringView package_name) const
     {

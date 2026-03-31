@@ -12,7 +12,7 @@ Symbol GenerateUniqueSymbol()
 }
 }
 
-Symbol SymbolTable::intern(StringView str) noexcept
+Symbol &SymbolTable::intern(StringView str) noexcept
 {
     auto it = m_string_to_symbol.find(str);
 

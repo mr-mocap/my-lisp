@@ -21,7 +21,7 @@ static SExpression make_symbol(StringView sv, Environment &environment)
     if ( sym_opt )
         return { sym_opt.value() };
     else
-        return { environment.current_package()->intern(sv) };
+        return { environment.current_package()->intern(sv) }; // Also sets the home package of the symbol to the current package, which is what we want when reading a symbol literal
 }
 
 // Try to parse a numeric literal. On failure return a ParseError instead of
@@ -182,7 +182,8 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         return parse_list(tokenizer, next, environment);
     }
     case Tokenizer::Type_e::RightParen:
-        // stray right paren � return an explicit parse error instead of NIL
+        // stray right paren
+        // return an explicit parse error instead of NIL
         return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position(), "Stray right parenthesis"});
 
     case Tokenizer::Type_e::Symbol:
