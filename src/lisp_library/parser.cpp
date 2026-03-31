@@ -29,50 +29,11 @@ static SExpression make_symbol(StringView sv, Environment &environment)
 static ParseResult make_number(const Tokenizer::NumberData &data)
 {
     return ParseResult( SExpression{ data.value } );
-#if 0
-    // Convert u8string_view to std::string for parsing
-    std::string bytes = text_io::to_string(data.text);
-
-    try
-    {
-        size_t idx = 0;
-        Number v = std::stod(bytes, &idx);
-
-        // Ensure the entire token was consumed by the number parser
-        if (idx != bytes.size())
-            return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
-
-    }
-    catch (...)
-    {
-        return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
-    }
-#endif
 }
 
 static ParseResult make_fixednumber(const Tokenizer::FixedNumberData &data)
 {
     return ParseResult( SExpression{ data.value } );
-#if 0
-    // Convert u8string_view to std::string for parsing
-    std::string bytes = text_io::to_string(data.text);
-
-    try
-    {
-        size_t idx = 0;
-        Number v = std::stoi(bytes, &idx);
-
-        // Ensure the entire token was consumed by the number parser
-        if (idx != bytes.size())
-            return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
-
-        return ParseResult( SExpression{ v } );
-    }
-    catch (...)
-    {
-        return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Invalid number literal" } );
-    }
-#endif
 }
 
 static ParseResult make_char(StringView sv)
@@ -221,7 +182,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
         return parse_list(tokenizer, next, environment);
     }
     case Tokenizer::Type_e::RightParen:
-        // stray right paren — return an explicit parse error instead of NIL
+        // stray right paren ï¿½ return an explicit parse error instead of NIL
         return std::unexpected( ParseError{ ParseError::UnexpectedToken, token.position(), "Stray right parenthesis"});
 
     case Tokenizer::Type_e::Symbol:
