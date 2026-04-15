@@ -108,13 +108,18 @@ SExpression packagep(Environment &, SExpression parameter)
 
 SExpression eq(Environment &, SExpression )
 {
-    // TODO: IMPLEMENT ME
+    // Are these the same, identical object in memory?
+    // TODO: IMPLEMENT ME (compare underlying pointers)
     return SExpression::make_nil();
 }
 
 SExpression eql(Environment &, SExpression )
 {
     // TODO: IMPLEMENT ME
+    // Return true if:
+    // 1. They are the same object in memory (eq)
+    // 2. They are numbers of the same type and value
+    // 3. They are characters of the same value
     return SExpression::make_nil();
 }
 
