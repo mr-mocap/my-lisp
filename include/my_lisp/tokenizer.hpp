@@ -36,20 +36,20 @@ public:
 
     struct CommonData
     {
-        StringView text;
+        FundamentalType::StringView text;
         size_t     position = 0;
     };
 
     struct NumberData
     {
-        StringView text;
+        FundamentalType::StringView text;
         size_t     position = 0;
         double     value = 0.0;
     };
 
     struct FixedNumberData
     {
-        StringView text;
+        FundamentalType::StringView text;
         size_t     position = 0;
         int64_t    value = 0;
     };
@@ -59,7 +59,7 @@ public:
         Type_e     type;
         std::variant<CommonData, NumberData, FixedNumberData> data;
 
-        StringView text() const
+        FundamentalType::StringView text() const
         {
             switch ( type )
             {
@@ -103,20 +103,20 @@ protected:
     Input &m_input;
 
     // Current input buffer (one or more lines concatenated as needed)
-    ::String m_buffer;
+    FundamentalType::String m_buffer;
     size_t   m_pos = 0;
     bool     m_eof = false;
     bool     m_read_attempted = false;
 
     // Persistent storage for token text to ensure StringView remains valid
     // after m_buffer is replaced.
-    ::String m_storage;
+    FundamentalType::String m_storage;
 
     // Peek cache
     bool     m_has_peek = false;
     Token    m_peek_token;
-    ::String m_peek_buffer;
+    FundamentalType::String m_peek_buffer;
     size_t   m_peek_pos = 0;
     bool     m_peek_eof = false;
-    ::String m_peek_storage;
+    FundamentalType::String m_peek_storage;
 };

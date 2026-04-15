@@ -41,6 +41,8 @@ SExpression stringp(Environment &current_environment, SExpression parameter);
 
 SExpression functionp(Environment &current_environment, SExpression parameter);
 
+SExpression packagep(Environment &, SExpression parameter);
+
 #if 0
 SExpression bit-vector-p(SExpression parameter);
 SExpression vectorp(SExpression parameter);
@@ -48,7 +50,6 @@ SExpression simple-vector-p(SExpression parameter);
 SExpression simple-string-p(SExpression parameter);
 SExpression somple-bit-vector-p(SExpression parameter);
 SExpression arrayp(SExpression parameter);
-SExpression packagep(SExpression parameter);
 SExpression compiled-function-p(SExpression parameter);
 SExpression commonp(SExpression parameter);
 #endif
@@ -60,10 +61,10 @@ SExpression commonp(SExpression parameter);
  *
  *  The following functions check for various forms of equality.
  */
-//SExpression eq(SExpression left, SExpression right);
-//SExpression eql(SExpression left, SExpression right);
-//SExpression equal(SExpression left, SExpression right);
-//SExpression equalp(SExpression left, SExpression right);
+SExpression eq(Environment &current_environment, SExpression parameter);
+SExpression eql(Environment &current_environment, SExpression parameter);
+SExpression equal(Environment &current_environment, SExpression parameter);
+SExpression equalp(Environment &current_environment, SExpression parameter);
 ///@}
 
 /** @addtogroup LogicalOperators Various Logical Operations

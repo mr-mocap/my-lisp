@@ -19,7 +19,7 @@ TEST_CASE("read_expression parses Symbol", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::Symbol);
+        REQUIRE(e.value().type() == Variant::Type::Symbol);
     }
 }
 
@@ -38,7 +38,7 @@ TEST_CASE("read_expression parses String", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::String);
+        REQUIRE(e.type() == Variant::Type::String);
         REQUIRE(e.asString() == u8"hello");
     }
 }
@@ -58,8 +58,8 @@ TEST_CASE("read_expression parses Char", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::Char);
-        REQUIRE(e.asChar() == static_cast<::Char>('A'));
+        REQUIRE(e.type() == Variant::Type::Char);
+        REQUIRE(e.asChar() == static_cast<FundamentalType::Char>('A'));
     }
 
     SECTION("Lower-case ASCII")
@@ -75,8 +75,8 @@ TEST_CASE("read_expression parses Char", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::Char);
-        REQUIRE(e.asChar() == static_cast<::Char>('c'));
+        REQUIRE(e.type() == Variant::Type::Char);
+        REQUIRE(e.asChar() == static_cast<FundamentalType::Char>('c'));
     }
 }
 
@@ -95,7 +95,7 @@ TEST_CASE("read_expression parses Numbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::Number);
+        REQUIRE(e.type() == Variant::Type::Number);
         REQUIRE(e.asNumber() == 12.45);
     }
 
@@ -112,7 +112,7 @@ TEST_CASE("read_expression parses Numbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::Number);
+        REQUIRE(e.type() == Variant::Type::Number);
         REQUIRE(e.asNumber() == 0.45);
     }
 
@@ -129,7 +129,7 @@ TEST_CASE("read_expression parses Numbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::Number);
+        REQUIRE(e.type() == Variant::Type::Number);
         REQUIRE(e.asNumber() == 777.0);
     }
 
@@ -150,7 +150,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 999);
     }
 
@@ -167,7 +167,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 999);
     }
 
@@ -184,7 +184,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == -1);
     }
 
@@ -201,7 +201,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 0);
     }
 
@@ -218,7 +218,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 1);
     }
 
@@ -235,7 +235,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 15);
     }
 
@@ -252,7 +252,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 10);
     }
 
@@ -269,7 +269,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 5);
     }
 
@@ -286,7 +286,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 0);
     }
 
@@ -303,7 +303,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 7);
     }
 
@@ -320,7 +320,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 8);
     }
 
@@ -337,7 +337,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 9);
     }
 
@@ -354,7 +354,7 @@ TEST_CASE("read_expression parses FixedNumbers", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::FixedNumber);
+        REQUIRE(e.type() == Variant::Type::FixedNumber);
         REQUIRE(e.asFixedNumber() == 511);
     }
 }
@@ -374,7 +374,7 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::Nil);
+        REQUIRE(e.type() == Variant::Type::Nil);
     }
 
     SECTION("List containing one item")
@@ -390,12 +390,11 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::ConsCell);
+        REQUIRE(e.type() == Variant::Type::ConsCell);
         auto cell = e.asConsCellPtr();
         REQUIRE(cell != nullptr);
-        REQUIRE(cell->car.type() == SExpression::Symbol);
-        REQUIRE(cell->cdr.type() == SExpression::Nil);
-
+        REQUIRE(cell->car.type() == Variant::Type::Symbol);
+        REQUIRE(cell->cdr.type() == Variant::Type::Nil);
         REQUIRE(lisp_machine.environment().find_symbol( text_io::to_utf8_string_view("A") ).has_value());
     }
 
@@ -412,15 +411,15 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::ConsCell);
+        REQUIRE(e.type() == Variant::Type::ConsCell);
         auto cell = e.asConsCellPtr();
         REQUIRE(cell != nullptr);
-        REQUIRE(cell->car.type() == SExpression::Symbol);
-        REQUIRE(cell->cdr.type() == SExpression::ConsCell);
+        REQUIRE(cell->car.type() == Variant::Type::Symbol);
+        REQUIRE(cell->cdr.type() == Variant::Type::ConsCell);
 
         auto cell2 = cell->cdr.asConsCellPtr();
-        REQUIRE(cell2->car.type() == SExpression::Symbol);
-        REQUIRE(cell2->cdr.type() == SExpression::Nil);
+        REQUIRE(cell2->car.type() == Variant::Type::Symbol);
+        REQUIRE(cell2->cdr.type() == Variant::Type::Nil);
     }
 
     SECTION("Dotted pair")
@@ -436,11 +435,11 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::ConsCell);
+        REQUIRE(e.type() == Variant::Type::ConsCell);
         auto cell = e.asConsCellPtr();
-        REQUIRE(cell->car.type() == SExpression::Symbol);
+        REQUIRE(cell->car.type() == Variant::Type::Symbol);
         // cdr should be a symbol 'b'
-        REQUIRE(cell->cdr.type() == SExpression::Symbol);
+        REQUIRE(cell->cdr.type() == Variant::Type::Symbol);
     }
 
     SECTION("Nested list")
@@ -456,28 +455,26 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.type() == SExpression::ConsCell);
-
+        REQUIRE(e.type() == Variant::Type::ConsCell);
         auto cell = e.asConsCellPtr();
 
         // Symbol for "a"
-        REQUIRE(cell->car.type() == SExpression::Symbol);
-        REQUIRE(cell->cdr.type() == SExpression::ConsCell); // next cell for "(b c)"
-
+        REQUIRE(cell->car.type() == Variant::Type::Symbol);
+        REQUIRE(cell->cdr.type() == Variant::Type::ConsCell); // next cell for "(b c)"
         auto rest = cell->cdr.asConsCellPtr();
 
-        REQUIRE(rest->car.type() == SExpression::ConsCell); // "(b c)"
-        REQUIRE(rest->cdr.type() == SExpression::Nil);
+        REQUIRE(rest->car.type() == Variant::Type::ConsCell); // "(b c)"
+        REQUIRE(rest->cdr.type() == Variant::Type::Nil);
 
         auto inner = rest->car.asConsCellPtr();
 
-        REQUIRE(inner->car.type() == SExpression::Symbol); // "b"
-        REQUIRE(inner->cdr.type() == SExpression::ConsCell);
+        REQUIRE(inner->car.type() == Variant::Type::Symbol); // "b"
+        REQUIRE(inner->cdr.type() == Variant::Type::ConsCell);
 
         auto inner_rest = inner->cdr.asConsCellPtr();
 
-        REQUIRE(inner_rest->car.type() == SExpression::Symbol); // "c"
-        REQUIRE(inner_rest->cdr.type() == SExpression::Nil);
+        REQUIRE(inner_rest->car.type() == Variant::Type::Symbol); // "c"
+        REQUIRE(inner_rest->cdr.type() == Variant::Type::Nil);
     }
 }
 
@@ -496,15 +493,15 @@ TEST_CASE("read_expression handles quote", "[Parser]")
 
     SExpression e = res.value();
 
-    REQUIRE(e.type() == SExpression::ConsCell);
+    REQUIRE(e.type() == Variant::Type::ConsCell);
 
-    ConsCellPtr cell = e.asConsCellPtr();
+    FundamentalType::ConsCellPtr cell = e.asConsCellPtr();
 
-    REQUIRE(cell->car.type() == SExpression::Symbol); // quote symbol
-    REQUIRE(cell->cdr.type() == SExpression::ConsCell);
+    REQUIRE(cell->car.type() == Variant::Type::Symbol); // quote symbol
+    REQUIRE(cell->cdr.type() == Variant::Type::ConsCell);
 
-    ConsCellPtr tail = cell->cdr.asConsCellPtr();
+    FundamentalType::ConsCellPtr tail = cell->cdr.asConsCellPtr();
 
-    REQUIRE(tail->car.type() == SExpression::Symbol); // quoted symbol x
-    REQUIRE(tail->cdr.type() == SExpression::Nil);
+    REQUIRE(tail->car.type() == Variant::Type::Symbol); // quoted symbol x
+    REQUIRE(tail->cdr.type() == Variant::Type::Nil);
 }

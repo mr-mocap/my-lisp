@@ -2,9 +2,9 @@
 #include <my_lisp/commonlisppredefinedfunctions.hpp>
 #include <array>
 
-auto CommonLispSymbols = std::to_array<std::pair<StringView, SExpression>>({
-    { u8"NIL",     { ::Nil{}  } },
-    { u8"T",       { ::True{} } },
+auto CommonLispSymbols = std::to_array<std::pair<FundamentalType::StringView, SExpression>>({
+    { u8"NIL",     { FundamentalType::Nil{}  } },
+    { u8"T",       { FundamentalType::True{} } },
     { u8"NULL",    { PredefinedFunctions::null  } },
     { u8"SYMBOLP", { PredefinedFunctions::symbolp  } },
     { u8"ATOM",    { PredefinedFunctions::atom  } },
@@ -19,6 +19,7 @@ auto CommonLispSymbols = std::to_array<std::pair<StringView, SExpression>>({
     { u8"CHARACTERP", { PredefinedFunctions::characterp  } },
     { u8"STRINGP",    { PredefinedFunctions::stringp  } },
     { u8"FUNCTIONP",  { PredefinedFunctions::functionp  } },
+    { u8"PACKAGEP",   { PredefinedFunctions::packagep  } },
 
     { u8"NOT",     { PredefinedFunctions::logical_not  } }
     });
@@ -26,16 +27,16 @@ auto CommonLispSymbols = std::to_array<std::pair<StringView, SExpression>>({
 void BasicLispSetup::create_standard_packages()
 {
     {
-        PackagePtr standard_pkg = m_package_collection.make_package(u8"KEYWORD");
+        FundamentalType::PackagePtr standard_pkg = m_package_collection.make_package(u8"KEYWORD");
 
         m_package_collection.add_package(standard_pkg);
     }
     {
-        PackagePtr cl_pkg = m_package_collection.make_package(u8"COMMON-LISP");
+        FundamentalType::PackagePtr cl_pkg = m_package_collection.make_package(u8"COMMON-LISP");
 
         for ( const auto& [symbol_name, sexpression] : CommonLispSymbols )
         {
-            Symbol s( cl_pkg->intern( symbol_name ) );
+            FundamentalType::Symbol s( cl_pkg->intern( symbol_name ) );
 
             cl_pkg->export_name( symbol_name );
             cl_pkg->set_symbol_value( s, sexpression );
@@ -44,7 +45,7 @@ void BasicLispSetup::create_standard_packages()
         m_package_collection.add_package(cl_pkg);
     }
     {
-        PackagePtr clu_pkg = m_package_collection.make_package(u8"COMMON-LISP-USER");
+        FundamentalType::PackagePtr clu_pkg = m_package_collection.make_package(u8"COMMON-LISP-USER");
 
         m_package_collection.add_package(clu_pkg);
     }

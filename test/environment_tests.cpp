@@ -50,7 +50,7 @@ TEST_CASE("Finding a Symbol in the global environment", "[Environment]")
     SECTION("finding an existing Symbol succeeds")
     {
         // Intern a symbol into the package
-        Symbol inserted_symbol = p->intern(u8"ExistingSymbol");
+        FundamentalType::Symbol inserted_symbol = p->intern(u8"ExistingSymbol");
         OptionalSymbol sym = global_env.find_symbol(u8"ExistingSymbol");
 
         REQUIRE(sym.has_value());
@@ -58,11 +58,11 @@ TEST_CASE("Finding a Symbol in the global environment", "[Environment]")
     }
     SECTION("TestPackage uses AnotherPackage")
     {
-        PackagePtr another_package = pc.make_package(u8"AnotherPackage");
+        FundamentalType::PackagePtr another_package = pc.make_package(u8"AnotherPackage");
 
         pc.add_package(another_package);
 
-        Symbol other_symbol = another_package->intern(u8"SymbolInAnotherPackage");
+        FundamentalType::Symbol other_symbol = another_package->intern(u8"SymbolInAnotherPackage");
 
         p->use_package(u8"AnotherPackage");
 

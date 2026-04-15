@@ -1,52 +1,52 @@
 #pragma once
 
-#include <my_lisp/fundamental_types.hpp>
-#include <my_lisp/symbol.hpp>
+#include <my_lisp/types/variant.hpp>
+
 
 struct SExpression
 {
-    using VariantType = std::variant<::Nil,
-                                     ::True,
-                                     ::String,
-                                     ::Symbol,
-                                     ::Number,
-                                     ::FixedNumber,
-                                     ::Char,
-                                     ::Function,
-                                     ::ConsCellPtr>;
+    constexpr SExpression() noexcept = default;
 
-    // NOTE: The order of the types in this variant is important,
-    // as the type() function relies on the index of the variant to determine
-    // the type of the SExpression.
-    enum Type
+    template <Concepts::VariantLike T>
+    SExpression(T parameter)
+        :
+        _value( std::make_shared<Variant>( std::forward<T>(parameter) ) )
     {
-        Nil,
-        True,
-        String,
-        Symbol,
-        Number,
-        FixedNumber,
-        Char,
-        Function,
-        ConsCell
-    };
+    }
 
-    constexpr SExpression() : value( ::Nil{} ) {}
-    constexpr SExpression(::Nil         parameter) : value( parameter ) { }
-    constexpr SExpression(::True        parameter) : value( parameter ) { }
-    explicit constexpr SExpression(::String      parameter) : value( std::move(parameter) ) { }
-    constexpr SExpression(::StringView  parameter) : value( ::String(parameter) ) { }
-    constexpr SExpression(::Symbol      parameter) : value( std::move(parameter) ) { }
-    constexpr SExpression(::Number      parameter) : value( parameter ) { }
-    constexpr SExpression(::FixedNumber parameter) : value( parameter ) { }
-    constexpr SExpression(::Char        parameter) : value( parameter ) { }
-    constexpr SExpression(::Function    parameter) : value( std::move(parameter) ) { }
-    constexpr SExpression(::ConsCellPtr parameter) : value( std::move(parameter) ) { }
+    SExpression(FundamentalType::StringView parameter)
+        :
+        _value( std::make_shared<Variant>( FundamentalType::String(parameter) ) )
+    {
+    }
 
-    static constexpr SExpression make_nil()  { return SExpression{}; }
-    static constexpr SExpression make_true() { return SExpression{ ::True{} }; }
+    SExpression(const Variant &variant)
+        :
+        _value( std::make_shared<Variant>( variant ) )
+    {
+    }
 
-    static constexpr SExpression make_function(::Function func)
+    SExpression(Variant &&variant)
+        :
+        _value( std::make_shared<Variant>( std::move(variant) ) )
+    {
+    }
+
+    SExpression(const SExpression &other)
+        :
+        _value( std::make_shared<Variant>( *other._value ) )
+    {
+    }
+
+    SExpression(SExpression &&other)
+        :
+        _value( std::move(other._value) )
+    {
+    }
+
+    static SExpression make_nil()  { return FundamentalType::Nil{}; }
+    static SExpression make_true() { return FundamentalType::True{}; }
+    static SExpression make_function(FundamentalType::Function func)
     {
         return { std::move(func) };
     }
@@ -61,121 +61,136 @@ struct SExpression
      */
     static SExpression make_cons(SExpression first, SExpression rest)
     {
-      return { std::make_shared<::ConsCell>( std::move(first), std::move(rest) ) };
+      return SExpression{ std::make_shared<::ConsCell>( std::move(first), std::move(rest) ) };
     } 
 
     SExpression &operator =(const SExpression &other)
     {
         if ( &other != this )
-            value = other.value;
+            _value = other._value;
         return *this;
     }
 
-    constexpr SExpression &operator =(::Nil parameter)
+    SExpression &operator =(SExpression &&other) noexcept
     {
-        value.emplace<Type::Nil>( std::move(parameter) );
+        if ( &other != this )
+            _value = std::move(other._value);
         return *this;
     }
 
-    constexpr SExpression &operator =(::True parameter)
+    template <Concepts::VariantLike T>
+    SExpression &operator =(T parameter)
     {
-        value.emplace<Type::True>( std::move(parameter) );
+        // Reset the value to a new one
+        _value = std::make_shared<Variant>( std::forward<T>(parameter) );
         return *this;
     }
 
-    constexpr SExpression &operator =(::StringView parameter)
+    SExpression &operator =(FundamentalType::StringView parameter)
     {
-        value.emplace<Type::String>( parameter );
+        // Reset the value to a new one
+        _value = std::make_shared<Variant>( FundamentalType::String(parameter) );
         return *this;
     }
 
-    constexpr SExpression &operator =(::Symbol parameter)
+    constexpr Variant::Type type() const
     {
-        value.emplace<Type::Symbol>( std::move(parameter) );
-        return *this;
+        return _value->type();
     }
 
-    constexpr SExpression &operator =(::Number parameter)
+    constexpr FundamentalType::Nil asNil()
     {
-        value.emplace<Type::Number>( parameter );
-        return *this;
+        return _value->asNil();
     }
 
-    constexpr SExpression &operator =(::FixedNumber parameter)
+    constexpr FundamentalType::True asTrue()
     {
-        value.emplace<Type::FixedNumber>( parameter );
-        return *this;
+        return _value->asTrue();
     }
 
-    constexpr SExpression &operator =(::Char parameter)
+    constexpr FundamentalType::String &asString()
     {
-        value.emplace<Type::Char>( parameter );
-        return *this;
+        return _value->asString();
     }
 
-    constexpr SExpression &operator =(::Function parameter)
+    constexpr const FundamentalType::String &asString() const
     {
-        value.emplace<Type::Function>( parameter );
-        return *this;
+        return _value->asString();
     }
 
-    constexpr SExpression &operator =(::ConsCellPtr parameter)
+    constexpr FundamentalType::Symbol &asSymbol()
     {
-        value.emplace<Type::ConsCell>( std::move(parameter) );
-        return *this;
+        return _value->asSymbol();
     }
 
-    constexpr Type type() const
+    constexpr const FundamentalType::Symbol &asSymbol() const
     {
-        return static_cast<enum Type>( value.index() );
+        return _value->asSymbol();
     }
 
-    constexpr ::Nil asNil()
+    constexpr FundamentalType::Number asNumber()
     {
-        return std::get<::Nil>(value);
+        return _value->asNumber();
     }
 
-    constexpr ::True asTrue()
+    constexpr FundamentalType::FixedNumber asFixedNumber()
     {
-        return std::get<::True>(value);
+        return _value->asFixedNumber();
     }
 
-    constexpr ::String &asString()
+    constexpr FundamentalType::Char asChar()
     {
-        return std::get<::String>(value);
+        return _value->asChar();
     }
 
-    constexpr ::Symbol asSymbol()
+    constexpr FundamentalType::Function asFunction()
     {
-        return std::get<::Symbol>(value);
+        return _value->asFunction();
     }
 
-    constexpr ::Number asNumber()
+    FundamentalType::PackagePtr asPackage()
     {
-        return std::get<::Number>(value);
+        return _value->asPackage();
     }
 
-    constexpr ::FixedNumber asFixedNumber()
+    const FundamentalType::PackagePtr asPackage() const
     {
-        return std::get<::FixedNumber>(value);
+        return _value->asPackage();
     }
 
-    constexpr ::Char asChar()
+    FundamentalType::ConsCellPtr asConsCellPtr()
     {
-        return std::get<::Char>(value);
+        return _value->asConsCellPtr();
     }
 
-    constexpr ::Function asFunction()
+    const FundamentalType::ConsCellPtr asConsCellPtr() const
     {
-        return std::get<::Function>(value);
+        return _value->asConsCellPtr();
     }
 
-    ::ConsCellPtr asConsCellPtr()
+    Variant &value()
     {
-        return std::get<::ConsCellPtr>(value);
+        return *_value;
     }
 
-    VariantType value;
+    const Variant &value() const
+    {
+        return *_value;
+    }
+
+    const Variant::value_type &rawValue() const
+    {
+        return _value->rawValue();
+    }
+
+    bool isList() const;
+
+    bool selfEvaluating() const
+    {
+        return value().type() != Variant::Type::Symbol && !isList();
+    }
+protected:
+    std::shared_ptr<Variant> _value{ std::make_shared<Variant>( FundamentalType::Nil{} ) };
 };
 
 struct ConsCell
@@ -183,19 +198,24 @@ struct ConsCell
     SExpression car;
     SExpression cdr;
 
-    bool isListSegment() const
+    bool isList() const
     {
-        return car.type() != SExpression::ConsCell && car.type() != SExpression::Nil && cdr.type() == SExpression::ConsCell;
+        return cdr.value().type() == Variant::Type::ConsCell;
     }
 
-    bool isEndListSegment() const
+    bool isEndList() const
     {
-        return car.type() != SExpression::Nil && cdr.type() == SExpression::Nil;
+        return cdr.value().type() == Variant::Type::Nil;
     }
 
     bool isDottedPair() const
     {
-        return (car.type() != SExpression::ConsCell) && (cdr.type() != SExpression::ConsCell) &&
-               (car.type() != SExpression::Nil) && (cdr.type() != SExpression::Nil);
+        return (car.value().type() != Variant::Type::ConsCell) &&
+               (cdr.value().type() != Variant::Type::ConsCell);
     }
 };
+
+inline bool SExpression::isList() const
+{
+    return value().type() == Variant::Type::ConsCell && value().asConsCellPtr()->isList();
+}

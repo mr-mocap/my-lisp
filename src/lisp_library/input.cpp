@@ -2,7 +2,7 @@
 #include <my_lisp/text_io.hpp>
 
 
-String Input::read_line()
+FundamentalType::String Input::read_line()
 {
     std::string line;
 

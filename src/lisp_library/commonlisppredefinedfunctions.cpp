@@ -6,49 +6,49 @@ namespace PredefinedFunctions
 
 SExpression null(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::Nil )
+    if ( parameter.value().type() == Variant::Type::Nil )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression symbolp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::Symbol )
+    if ( parameter.value().type() == Variant::Type::Symbol )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression atom(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::ConsCell )
+    if ( parameter.value().type() == Variant::Type::ConsCell )
         return SExpression::make_nil();
     return SExpression::make_true();
 }
 
 SExpression consp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::ConsCell )
+    if ( parameter.value().type() == Variant::Type::ConsCell )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression listp(Environment &, SExpression parameter)
 {
-    if ( (parameter.type() == SExpression::ConsCell) || (parameter.type() == SExpression::Nil) )
+    if ( (parameter.value().type() == Variant::Type::ConsCell) || (parameter.value().type() == Variant::Type::Nil) )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression numberp(Environment &, SExpression parameter)
 {
-    if ( (parameter.type() == SExpression::Number) || (parameter.type() == SExpression::FixedNumber) )
+    if ( (parameter.value().type() == Variant::Type::Number) || (parameter.value().type() == Variant::Type::FixedNumber) )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression integerp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::FixedNumber )
+    if ( parameter.value().type() == Variant::Type::FixedNumber )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
@@ -61,7 +61,7 @@ SExpression rationalp(Environment &, SExpression)
 
 SExpression floatp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::Number )
+    if ( parameter.value().type() == Variant::Type::Number )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
@@ -80,28 +80,59 @@ SExpression complexp(Environment &, SExpression)
 
 SExpression characterp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::Char )
+    if ( parameter.value().type() == Variant::Type::Char )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression stringp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::String )
+    if ( parameter.value().type() == Variant::Type::String )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression functionp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::Function )
+    if ( parameter.value().type() == Variant::Type::Function )
         return SExpression::make_true();
+    return SExpression::make_nil();
+}
+
+SExpression packagep(Environment &, SExpression parameter)
+{
+    if ( parameter.value().type() == Variant::Type::Package )
+        return SExpression::make_true();
+    return SExpression::make_nil();
+}
+
+SExpression eq(Environment &, SExpression )
+{
+    // TODO: IMPLEMENT ME
+    return SExpression::make_nil();
+}
+
+SExpression eql(Environment &, SExpression )
+{
+    // TODO: IMPLEMENT ME
+    return SExpression::make_nil();
+}
+
+SExpression equal(Environment &, SExpression )
+{
+    // TODO: IMPLEMENT ME
+    return SExpression::make_nil();
+}
+
+SExpression equalp(Environment &, SExpression )
+{
+    // TODO: IMPLEMENT ME
     return SExpression::make_nil();
 }
 
 SExpression logical_not(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == SExpression::Nil )
+    if ( parameter.value().type() == Variant::Type::Nil )
         return SExpression::make_true();
     return SExpression::make_nil();
 }

@@ -71,7 +71,7 @@ public:
     }
 #endif
 
-    OptionalSymbol find_symbol(StringView symbol_name) const
+    OptionalSymbol find_symbol(FundamentalType::StringView symbol_name) const
     {
         // If there is no current package, we can't look up the symbol_name
         if ( m_current_package.expired() )
@@ -80,7 +80,7 @@ public:
         if (auto sym = current_package()->find_symbol(symbol_name) )
             return sym;
         
-        for ( StringView iUsedPackageName : current_package()->uses_packages() )
+        for ( FundamentalType::StringView iUsedPackageName : current_package()->uses_packages() )
         {
             const PackagePtr current_used_pkg = package_collection().find_package( iUsedPackageName );
 
@@ -98,18 +98,33 @@ public:
         return std::nullopt;
     }
 
-    StringView symbol_name(Symbol symbol) const
+    SExpression *find_symbol_value(FundamentalType::Symbol symbol)
     {
         if ( m_current_package.expired() )
-            return StringView();
-
+            return nullptr;
         if ( symbol.home_package.empty() )
-            return StringView();
+            return nullptr;
 
-        const PackagePtr package_for_symbol = m_packagecollection.find_package( symbol.home_package );
+        FundamentalType::PackagePtr package_for_symbol = m_packagecollection.find_package( symbol.home_package );
 
         if ( !package_for_symbol )
-            return StringView();
+            return nullptr;
+
+        return package_for_symbol->find_symbol_value(symbol);
+    }
+
+    FundamentalType::StringView symbol_name(FundamentalType::Symbol symbol) const
+    {
+        if ( m_current_package.expired() )
+            return FundamentalType::StringView();
+
+        if ( symbol.home_package.empty() )
+            return FundamentalType::StringView();
+
+        const FundamentalType::PackagePtr package_for_symbol = m_packagecollection.find_package( symbol.home_package );
+
+        if ( !package_for_symbol )
+            return FundamentalType::StringView();
 
         return package_for_symbol->symbol_name( symbol );
     }

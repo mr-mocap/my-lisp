@@ -8,33 +8,33 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         explicit Visitor(std::ostream &out, const Environment &e) : output(out), env(e) {}
         explicit Visitor(std::ostream &out, const Environment &e, int i) : output(out), env(e), iteration(i) {}
 
-        void operator()(Nil) const
+        void operator()(FundamentalType::Nil) const
         {
             std::print(output, "NIL");
         }
-        void operator()(True) const
+        void operator()(FundamentalType::True) const
         {
             std::print(output, "T");
         }
-        void operator()(const String &s) const
+        void operator()(const FundamentalType::String &s) const
         {
             std::print(output, "\"{}\"", text_io::to_string_view(s));
         }
-        void operator()(Symbol s) const
+        void operator()(FundamentalType::Symbol s) const
         {
-            StringView sym_name( env.symbol_name(s) );
+            FundamentalType::StringView sym_name( env.symbol_name(s) );
 
             std::print(output, "{}", (sym_name.empty()) ? "NIL" : text_io::to_string_view(sym_name));
         }
-        void operator()(Number d) const
+        void operator()(FundamentalType::Number d) const
         {
             std::print(output, "{}", d);
         }
-        void operator()(FixedNumber fixednum) const
+        void operator()(FundamentalType::FixedNumber fixednum) const
         {
             std::print(output, "{}", fixednum);
         }
-        void operator()(Char c) const
+        void operator()(FundamentalType::Char c) const
         {
             // naive conversion of codepoint to utf-8 bytes is not implemented;
             // print as numeric value for now
@@ -43,33 +43,37 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
             else
                 std::print(output, "Printing characters outside of ASCII range not implemented yet");
         }
-        void operator()(Function) const
+        void operator()(FundamentalType::Function) const
         {
             std::print(output, "FunctionPtr");
         }
-        void operator()(::ConsCellPtr cons) const
+        void operator()(FundamentalType::PackagePtr) const
+        {
+            std::print(output, "Package");
+        }
+        void operator()(FundamentalType::ConsCellPtr cons) const
         {
             // Dotted pair?
             if ( cons->isDottedPair() )
             {
                 std::print(output, "(");
-                std::visit( Visitor( output, env ), cons->car.value );
+                std::visit( Visitor( output, env ), cons->car.rawValue() );
                 std::print(output, " . ");
-                std::visit( Visitor( output, env ), cons->cdr.value );
+                std::visit( Visitor( output, env ), cons->cdr.rawValue() );
                 std::print(output, ")");
             }
-            else if ( cons->isListSegment() )
+            else if ( cons->isList() )
             {
                 if ( iteration == 0 )
                     std::print(output, "(");
 
-                std::visit( Visitor( output, env ), cons->car.value );
+                std::visit( Visitor( output, env ), cons->car.rawValue() );
                 std::print(output, " ");
-                std::visit( Visitor( output, env, iteration + 1 ), cons->cdr.value );
+                std::visit( Visitor( output, env, iteration + 1 ), cons->cdr.rawValue() );
             }
-            else if ( cons->isEndListSegment() )
+            else if ( cons->isEndList() )
             {
-                std::visit( Visitor( output, env ), cons->car.value );
+                std::visit( Visitor( output, env ), cons->car.rawValue() );
                 std::print(output, ")");
             }
         }
@@ -79,7 +83,7 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         int iteration = 0;
     };
 
-    std::visit( Visitor( output, environment ), expr.value );
+    std::visit( Visitor( output, environment ), expr.rawValue() );
 }
 
 
@@ -91,7 +95,7 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
  *        that we only make one copy/move per argument, regardless of whether the caller has an
  *        lvalue or rvalue.
  */
-::ConsCellPtr cons(SExpression first, SExpression rest)
+FundamentalType::ConsCellPtr cons(SExpression first, SExpression rest)
 {
   auto cell = std::make_shared<ConsCell>( std::move(first), std::move(rest) );
 

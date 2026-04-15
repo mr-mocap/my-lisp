@@ -14,7 +14,7 @@ static ParseResult read_expression_impl(Tokenizer &tokenizer, Environment &envir
 // - Numbers and booleans are represented as Symbols for now (placeholder)
 // - Strings become ::String
 
-static SExpression make_symbol(StringView sv, Environment &environment)
+static SExpression make_symbol(FundamentalType::StringView sv, Environment &environment)
 {
     OptionalSymbol sym_opt = environment.find_symbol(sv);
 
@@ -36,14 +36,14 @@ static ParseResult make_fixednumber(const Tokenizer::FixedNumberData &data)
     return ParseResult( SExpression{ data.value } );
 }
 
-static ParseResult make_char(StringView sv)
+static ParseResult make_char(FundamentalType::StringView sv)
 {
     if (sv.empty())
         return std::unexpected( ParseError{ ParseError::UnexpectedToken, 0, "Empty char literal" } );
 
     // Very simple: take first byte as character. Proper UTF-8 decoding
     // can be added later.
-    return ParseResult( SExpression{ static_cast<Char>(sv[0]) } );
+    return ParseResult( SExpression{ static_cast<FundamentalType::Char>(sv[0]) } );
 }
 
 // Parse the rest of a list given the first token of the first element.

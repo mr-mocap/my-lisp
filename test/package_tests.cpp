@@ -12,7 +12,7 @@ TEST_CASE("Constructed Package has the given name", "[Package]")
 TEST_CASE("Constructing a Package with s SymbolTable that has data passes the data into the Package", "[Package]")
 {
     SymbolTable sym_table;
-    Symbol s = sym_table.intern(u8"foo");
+    FundamentalType::Symbol s = sym_table.intern(u8"foo");
 
     REQUIRE( sym_table.contains(u8"foo") );
     REQUIRE( sym_table.contains(s) );
@@ -29,12 +29,12 @@ TEST_CASE("interning a name returns a new Symbol the first time called", "[Packa
 
     REQUIRE_FALSE(p.find_symbol(u8"foo").has_value());
 
-    Symbol s = p.intern(u8"foo");
+    FundamentalType::Symbol s = p.intern(u8"foo");
 
     REQUIRE(p.find_symbol(u8"foo").has_value());
     REQUIRE(p.find_symbol(u8"foo").value() == s);
 
-    Symbol s2 = p.intern(u8"foo");
+    FundamentalType::Symbol s2 = p.intern(u8"foo");
 
     REQUIRE(s == s2);
 }
@@ -45,7 +45,7 @@ TEST_CASE("uninterning a name removes the Symbol from the Package", "[Package]")
 
     REQUIRE(p.find_symbol(u8"foo").has_value() == false);
 
-    Symbol s = p.intern(u8"foo");
+    FundamentalType::Symbol s = p.intern(u8"foo");
 
     REQUIRE(p.find_symbol(u8"foo").has_value());
     REQUIRE(p.find_symbol(u8"foo").value() == s);
@@ -59,7 +59,7 @@ TEST_CASE("importing a name/Symbol pair adds the pair to the Package", "[Package
 {
     Package p("TestPackage");
     Package other_package("OtherPackage");
-    Symbol  s = other_package.intern(u8"foo");
+    FundamentalType::Symbol  s = other_package.intern(u8"foo");
 
     // Show it exists in "other_package"
     REQUIRE(other_package.find_symbol(u8"foo").has_value());
@@ -93,7 +93,7 @@ TEST_CASE("is_exported returns true after export_symbol has been called", "[Pack
 
     REQUIRE(p.find_symbol(u8"foo").has_value() == false);
 
-    Symbol s = p.intern(u8"foo");
+    FundamentalType::Symbol s = p.intern(u8"foo");
 
     REQUIRE(p.find_symbol(u8"foo").has_value());
     REQUIRE(p.find_symbol(u8"foo").value() == s);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <my_lisp/fundamental_types.hpp>
+#include <my_lisp/types/fundamental.hpp>
 #include <iostream>
 
 class Input
@@ -18,7 +18,7 @@ public:
     {
     }
 
-    String read_line(); // Converted to UTF-8 string
+    FundamentalType::String read_line(); // Converted to UTF-8 string
 
     // Return true if the underlying stream has reached end-of-file.
     bool eof() const { return m_input_stream.eof(); }

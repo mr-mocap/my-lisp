@@ -6,24 +6,24 @@
 #include <cassert>
 
 
-static inline char current_char(const ::String &buf, size_t pos)
+static inline char current_char(const FundamentalType::String &buf, size_t pos)
 {
     if (pos >= buf.size())
         return '\0';
     return static_cast<char>(buf[pos]);
 }
 
-static inline unsigned char current_char_as_uc(const ::String &buf, size_t pos)
+static inline unsigned char current_char_as_uc(const FundamentalType::String &buf, size_t pos)
 {
     if (pos >= buf.size())
         return '\0';
     return static_cast<unsigned char>(buf[pos]);
 }
 
-static inline String uppercase_symbol(StringView input)
+static inline FundamentalType::String uppercase_symbol(FundamentalType::StringView input)
 {
     // TODO: FIXME: This only works for ASCII characters. Proper Unicode case folding can be added later.
-    String result;
+    FundamentalType::String result;
 
     result.reserve( input.size() );
     for ( char8_t c : input )
@@ -58,64 +58,64 @@ static bool is_digit_in_given_base(char c, int base)
     return false; // Not a recognized base
 }
 
-Tokenizer::Token make_common(Tokenizer::Type_e t, StringView sv, size_t pos)
+Tokenizer::Token make_common(Tokenizer::Type_e t, FundamentalType::StringView sv, size_t pos)
 {
     return { .type = t, .data = Tokenizer::CommonData{ .text = sv, .position = pos } };
 }
 
-Tokenizer::Token make_leftparen(StringView sv, size_t pos)
+Tokenizer::Token make_leftparen(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::LeftParen, sv, pos);
 }
 
-Tokenizer::Token make_rightparen(StringView sv, size_t pos)
+Tokenizer::Token make_rightparen(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::RightParen, sv, pos);
 }
 
-Tokenizer::Token make_symbol(StringView sv, size_t pos)
+Tokenizer::Token make_symbol(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::Symbol, sv, pos);
 }
 
-Tokenizer::Token make_number(StringView sv, size_t pos, double v)
+Tokenizer::Token make_number(FundamentalType::StringView sv, size_t pos, double v)
 {
     return { .type = Tokenizer::Type_e::Number, .data = Tokenizer::NumberData{.text = sv, .position = pos, .value = v } };
 }
 
-Tokenizer::Token make_fixednumber(StringView sv, size_t pos, int64_t v)
+Tokenizer::Token make_fixednumber(FundamentalType::StringView sv, size_t pos, int64_t v)
 {
     return { .type = Tokenizer::Type_e::FixedNumber, .data = Tokenizer::FixedNumberData{ .text = sv, .position = pos, .value = v } };
 }
 
-Tokenizer::Token make_string(StringView sv, size_t pos)
+Tokenizer::Token make_string(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::String, sv, pos);
 }
 
-Tokenizer::Token make_quote(StringView sv, size_t pos)
+Tokenizer::Token make_quote(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::Quote, sv, pos);
 }
 
-Tokenizer::Token make_comment(StringView sv, size_t pos)
+Tokenizer::Token make_comment(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::Comment, sv, pos);
 }
 
-Tokenizer::Token make_dot(StringView sv, size_t pos)
+Tokenizer::Token make_dot(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::Dot, sv, pos);
 }
 
-Tokenizer::Token make_char(StringView sv, size_t pos)
+Tokenizer::Token make_char(FundamentalType::StringView sv, size_t pos)
 {
     return make_common(Tokenizer::Type_e::Char, sv, pos);
 }
 
 Tokenizer::Token make_eof(size_t pos)
 {
-    return make_common(Tokenizer::Type_e::Eof, StringView(), pos);
+    return make_common(Tokenizer::Type_e::Eof, FundamentalType::StringView(), pos);
 }
 
 Tokenizer::Token Tokenizer::peek()
@@ -124,10 +124,10 @@ Tokenizer::Token Tokenizer::peek()
         return m_peek_token;
 
     // Save current state
-    ::String old_buffer = m_buffer;
+    FundamentalType::String old_buffer = m_buffer;
     size_t old_pos = m_pos;
     bool old_eof = m_eof;
-    ::String old_storage = m_storage;
+    FundamentalType::String old_storage = m_storage;
 
     // Consume a token to advance internal state
     Token t = next_token();
@@ -218,9 +218,8 @@ Tokenizer::Token Tokenizer::next_token()
             while ( m_pos < m_buffer.size() && current_char(m_buffer, m_pos) != '\n' )
                 ++m_pos;
 
-            m_storage.append( StringView(m_buffer.data() + ofs, m_pos - comment_start) );
-
-            return make_comment( StringView(m_storage.data() + ofs, m_storage.size()), comment_start );
+            m_storage.append(FundamentalType::StringView(m_buffer.data() + ofs, m_pos - comment_start));
+            return make_comment( FundamentalType::StringView(m_storage.data() + ofs, m_storage.size()), comment_start );
         }
 
         if ( std::isspace(static_cast<unsigned char>(c)) )
@@ -243,7 +242,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append(1, u8'(');
 
-        return make_leftparen( StringView(m_storage.data() + ofs, 1), token_pos );
+        return make_leftparen( FundamentalType::StringView(m_storage.data() + ofs, 1), token_pos );
     }
     if (c == ')')
     {
@@ -252,7 +251,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append(1, u8')');
 
-        return make_rightparen( StringView(m_storage.data() + ofs, 1), token_pos );
+        return make_rightparen( FundamentalType::StringView(m_storage.data() + ofs, 1), token_pos );
     }
     if (c == '\'')
     {
@@ -261,7 +260,7 @@ Tokenizer::Token Tokenizer::next_token()
 
         m_storage.append(1, u8'\'');
 
-        return make_quote( StringView(m_storage.data() + ofs, 1), token_pos );
+        return make_quote( FundamentalType::StringView(m_storage.data() + ofs, 1), token_pos );
     }
     if (c == '.')
     {
@@ -278,7 +277,7 @@ Tokenizer::Token Tokenizer::next_token()
 
             m_storage.append(1, u8'.');
 
-            return make_dot( StringView(m_storage.data() + ofs, 1), token_pos );
+            return make_dot( FundamentalType::StringView(m_storage.data() + ofs, 1), token_pos );
         }
     }
 
@@ -287,7 +286,7 @@ Tokenizer::Token Tokenizer::next_token()
     {
         ++m_pos; // consume '"'
 
-        ::String accum;
+        FundamentalType::String accum;
 
         while (true)
         {
@@ -296,7 +295,7 @@ Tokenizer::Token Tokenizer::next_token()
                 if (m_eof)
                     break;
 
-                ::String nextline = m_input.read_line();
+                FundamentalType::String nextline = m_input.read_line();
 
                 nextline.push_back( u8'\n' );
                 m_buffer.append(nextline);
@@ -341,7 +340,7 @@ Tokenizer::Token Tokenizer::next_token()
         size_t ofs = m_storage.size();
         m_storage.append(accum);
 
-        return make_string( StringView(m_storage.data() + ofs, accum.size()), token_pos );
+        return make_string( FundamentalType::StringView(m_storage.data() + ofs, accum.size()), token_pos );
     }
 
     // chars
@@ -361,7 +360,7 @@ Tokenizer::Token Tokenizer::next_token()
                 m_storage.append(m_buffer.data() + p - 1, 1);
                 m_pos = p;
 
-                return make_char( StringView(m_storage.data() + ofs, 1), token_pos );
+                return make_char( FundamentalType::StringView(m_storage.data() + ofs, 1), token_pos );
             }
         }
         else if ( int base = is_base_integer_specifier(next) )
@@ -384,7 +383,7 @@ Tokenizer::Token Tokenizer::next_token()
             {
                 // ASSUME: All characters matched
                 m_storage.append(m_buffer.data() + first_pos, m_buffer.data() + last_pos);
-                return make_fixednumber( StringView(m_storage.data() + ofs, last_pos - first_pos), token_pos, result );
+                return make_fixednumber( FundamentalType::StringView(m_storage.data() + ofs, last_pos - first_pos), token_pos, result );
             }
             else
             {
@@ -435,7 +434,7 @@ Tokenizer::Token Tokenizer::next_token()
             if ( conversion.ec == std::errc() )
             {
                 // ASSUME: All characters matched
-                return make_fixednumber( StringView(m_storage.data() + ofs, len), token_pos, result );
+                return make_fixednumber( FundamentalType::StringView(m_storage.data() + ofs, len), token_pos, result );
             }
             else
             {
@@ -457,7 +456,7 @@ Tokenizer::Token Tokenizer::next_token()
             if ( conversion.ec == std::errc() )
             {
                 // ASSUME: All characters matched
-                return make_number( StringView(m_storage.data() + ofs, len), token_pos, result );
+                return make_number( FundamentalType::StringView(m_storage.data() + ofs, len), token_pos, result );
             }
             else
             {
@@ -480,13 +479,13 @@ Tokenizer::Token Tokenizer::next_token()
         size_t len = m_pos - start;
         size_t ofs = m_storage.size();
 
-        ::String uppercased_symbol = uppercase_symbol( StringView(m_buffer.data() + start, len) );
+        FundamentalType::String uppercased_symbol = uppercase_symbol( FundamentalType::StringView(m_buffer.data() + start, len) );
 
         m_storage.append( uppercased_symbol );
 
         if ( uppercased_symbol == u8"EXIT" )
             return make_eof( m_pos );
-        return make_symbol( StringView(m_storage.data() + ofs, len), token_pos );
+        return make_symbol( FundamentalType::StringView(m_storage.data() + ofs, len), token_pos );
     }
 
     // Fallback: treat unknown single byte as symbol
@@ -496,5 +495,5 @@ Tokenizer::Token Tokenizer::next_token()
 
     m_storage.append(m_buffer.data() + token_pos, 1);
 
-    return make_symbol( StringView(m_storage.data() + ofs, 1), token_pos );
+    return make_symbol( FundamentalType::StringView(m_storage.data() + ofs, 1), token_pos );
 }
