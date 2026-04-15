@@ -17,6 +17,9 @@ template <typename T>
 concept StringLike = std::same_as<T, FundamentalType::String> || std::same_as<T, FundamentalType::StringView>;
 
 template <typename T>
+concept PathnameLike = std::same_as<T, FundamentalType::Pathname>;
+
+template <typename T>
 concept SymbolLike = std::same_as<T, FundamentalType::Symbol>;
 
 template <typename T>
@@ -38,7 +41,7 @@ template <typename T>
 concept ConsCellLike = std::same_as<T, FundamentalType::ConsCellPtr>;
 
 template <typename T>
-concept VariantLike = NilLike<T> || TrueLike<T> || StringLike<T> || SymbolLike<T> ||
-                      NumberLike<T> || FixedNumberLike<T> || CharLike<T> || FunctionLike<T>||
+concept VariantLike = NilLike<T>     || TrueLike<T>        || StringLike<T> || PathnameLike<T> || SymbolLike<T> ||
+                      NumberLike<T>  || FixedNumberLike<T> || CharLike<T>   || FunctionLike<T> ||
                       PackageLike<T> || ConsCellLike<T>;
 }

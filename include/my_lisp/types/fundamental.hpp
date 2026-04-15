@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <variant> // For std::monostate
+#include <filesystem>
 
 struct ConsCell;
 struct SExpression;
@@ -18,6 +19,7 @@ struct TrueValue { };
 using Nil         = std::monostate;
 using True        = TrueValue;
 using String      = std::u8string;
+using Pathname    = std::filesystem::path;
 using Number      = double;
 using FixedNumber = int64_t;
 using Char        = char32_t;

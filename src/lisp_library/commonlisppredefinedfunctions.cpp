@@ -1,4 +1,5 @@
 #include <my_lisp/commonlisppredefinedfunctions.hpp>
+#include <my_lisp/environment.hpp>
 
 
 namespace PredefinedFunctions
@@ -142,4 +143,32 @@ SExpression logical_not(Environment &, SExpression parameter)
     return SExpression::make_nil();
 }
 
+SExpression pathname(Environment &current_environment, SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::String )
+        return SExpression{ FundamentalType::Pathname( parameter.asString() ) };
+    else if ( parameter.type() == Variant::Type::Symbol )
+    {
+        FundamentalType::StringView symbol_name( current_environment.symbol_name(parameter.asSymbol()) );
+    }
+    return SExpression::make_nil();
+}
+
+//SExpression truename(Environment &current_environment, SExpression parameter);
+//SExpression parse_namestring(Environment &current_environment, SExpression parameter);
+//SExpression merge_pathnames(Environment &current_environment, SExpression parameter);
+//SExpression make_pathname(Environment &current_environment, SExpression parameter);
+//SExpression pathnamep(Environment &current_environment, SExpression parameter);
+//SExpression pathname_host(Environment &current_environment, SExpression parameter);
+//SExpression pathname_device(Environment &current_environment, SExpression parameter);
+//SExpression pathname_directory(Environment &current_environment, SExpression parameter);
+//SExpression pathname_name(Environment &current_environment, SExpression parameter);
+//SExpression pathname_type(Environment &current_environment, SExpression parameter);
+//SExpression pathname_version(Environment &current_environment, SExpression parameter);
+//SExpression namestring(Environment &current_environment, SExpression parameter);
+//SExpression file_namestring(Environment &current_environment, SExpression parameter);
+//SExpression directory_namestring(Environment &current_environment, SExpression parameter);
+//SExpression host_namestring(Environment &current_environment, SExpression parameter);
+//SExpression enough_namestring(Environment &current_environment, SExpression parameter);
+//SExpression user_homedir_pathname(Environment &current_environment, SExpression parameter);
 }

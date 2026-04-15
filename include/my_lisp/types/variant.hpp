@@ -11,6 +11,7 @@ public:
     using value_type = std::variant<FundamentalType::Nil,
                                     FundamentalType::True,
                                     FundamentalType::String,
+                                    FundamentalType::Pathname,
                                     FundamentalType::Symbol,
                                     FundamentalType::Number,
                                     FundamentalType::FixedNumber,
@@ -27,6 +28,7 @@ public:
         Nil,
         True,
         String,
+        Pathname,
         Symbol,
         Number,
         FixedNumber,
@@ -100,6 +102,16 @@ public:
     constexpr const FundamentalType::String &asString() const
     {
         return std::get<FundamentalType::String>(_value);
+    }
+
+    constexpr FundamentalType::Pathname &asPathname()
+    {
+        return std::get<FundamentalType::Pathname>(_value);
+    }
+
+    constexpr const FundamentalType::Pathname &asPathname() const
+    {
+        return std::get<FundamentalType::Pathname>(_value);
     }
 
     constexpr FundamentalType::Symbol &asSymbol()

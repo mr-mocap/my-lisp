@@ -78,4 +78,41 @@ SExpression logical_not(Environment &current_environment, SExpression parameter)
 //SExpression or(SExpression left, SExpression right); // Macro
 ///@}
 
+/** @addtogroup PathnameOperations Functions that operate on pathnames
+ *  
+ *  @{
+ *
+ *  The following functions use pathnames in some way.
+ */
+SExpression pathname(Environment &current_environment, SExpression parameter);
+SExpression truename(Environment &current_environment, SExpression parameter);
+SExpression parse_namestring(Environment &current_environment, SExpression parameter);
+SExpression merge_pathnames(Environment &current_environment, SExpression parameter);
+SExpression make_pathname(Environment &current_environment, SExpression parameter);
+SExpression pathnamep(Environment &current_environment, SExpression parameter);
+SExpression pathname_host(Environment &current_environment, SExpression parameter);
+SExpression pathname_device(Environment &current_environment, SExpression parameter);
+SExpression pathname_directory(Environment &current_environment, SExpression parameter);
+SExpression pathname_name(Environment &current_environment, SExpression parameter);
+SExpression pathname_type(Environment &current_environment, SExpression parameter);
+SExpression pathname_version(Environment &current_environment, SExpression parameter);
+SExpression namestring(Environment &current_environment, SExpression parameter);
+SExpression file_namestring(Environment &current_environment, SExpression parameter);
+SExpression directory_namestring(Environment &current_environment, SExpression parameter);
+SExpression host_namestring(Environment &current_environment, SExpression parameter);
+SExpression enough_namestring(Environment &current_environment, SExpression parameter);
+SExpression user_homedir_pathname(Environment &current_environment, SExpression parameter);
+///@}
+
+/** @addtogroup StreamOperations Functions that operate on streams
+ *  
+ *  @{
+ *
+ *  The following functions use streams in some way.
+ */
+SExpression streamp(Environment &current_environment, SExpression parameter);
+SExpression open_stream_p(Environment &current_environment, SExpression parameter);
+SExpression input_stream_p(Environment &current_environment, SExpression parameter);
+SExpression output_stream_p(Environment &current_environment, SExpression parameter);
+///@}
 }
