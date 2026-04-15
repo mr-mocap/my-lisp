@@ -7,15 +7,6 @@
 ## About my-lisp
 My implementation of the LISP programming language
 
-## WebAssembly Demo
-
-Try the live WebAssembly demo:
-- Main: [https://mr-mocap.github.io/my-lisp/](https://mr-mocap.github.io/my-lisp/)
-- Develop: [https://mr-mocap.github.io/my-lisp/develop/](https://mr-mocap.github.io/my-lisp/develop/)
-
-The `main` branch deploys to the root, `develop` to `/develop/`, and tags to `/tagname/`.
-
-
 ## More Details
 
  * [Dependency Setup](README_dependencies.md)
