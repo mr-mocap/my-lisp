@@ -20,6 +20,10 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         {
             std::print(output, "\"{}\"", text_io::to_string_view(s));
         }
+        void operator()(const FundamentalType::Pathname &p) const
+        {
+            std::print(output, "\"{}\"", text_io::to_string_view(p.u8string()));
+        }
         void operator()(FundamentalType::Symbol s) const
         {
             FundamentalType::StringView sym_name( env.symbol_name(s) );

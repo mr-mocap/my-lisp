@@ -149,8 +149,15 @@ SExpression pathname(Environment &current_environment, SExpression parameter)
         return SExpression{ FundamentalType::Pathname( parameter.asString() ) };
     else if ( parameter.type() == Variant::Type::Symbol )
     {
-        FundamentalType::StringView symbol_name( current_environment.symbol_name(parameter.asSymbol()) );
+        if (SExpression *symbol_value = current_environment.find_symbol_value( parameter.asSymbol() ))
+        {
+            if ( symbol_value->type() == Variant::Type::String )
+                return SExpression{ FundamentalType::Pathname( symbol_value->asString() ) };
+        }
     }
+    else if ( parameter.type() == Variant::Type::Pathname )
+        return parameter;
+
     return SExpression::make_nil();
 }
 

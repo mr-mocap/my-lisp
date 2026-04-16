@@ -118,6 +118,16 @@ struct SExpression
         return _value->asString();
     }
 
+    constexpr FundamentalType::Pathname &asPathname()
+    {
+        return _value->asPathname();
+    }
+
+    constexpr const FundamentalType::Pathname &asPathname() const
+    {
+        return _value->asPathname();
+    }
+
     constexpr FundamentalType::Symbol &asSymbol()
     {
         return _value->asSymbol();
