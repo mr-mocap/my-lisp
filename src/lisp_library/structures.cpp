@@ -61,9 +61,9 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
             if ( cons->isDottedPair() )
             {
                 std::print(output, "(");
-                std::visit( Visitor( output, env ), cons->car.rawValue() );
+                cons->car.visit( Visitor( output, env ) );
                 std::print(output, " . ");
-                std::visit( Visitor( output, env ), cons->cdr.rawValue() );
+                cons->cdr.visit( Visitor( output, env ) );
                 std::print(output, ")");
             }
             else if ( cons->isList() )
@@ -71,13 +71,13 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
                 if ( iteration == 0 )
                     std::print(output, "(");
 
-                std::visit( Visitor( output, env ), cons->car.rawValue() );
+                cons->car.visit( Visitor( output, env ) );
                 std::print(output, " ");
-                std::visit( Visitor( output, env, iteration + 1 ), cons->cdr.rawValue() );
+                cons->cdr.visit( Visitor( output, env, iteration + 1 ) );
             }
             else if ( cons->isEndList() )
             {
-                std::visit( Visitor( output, env ), cons->car.rawValue() );
+                cons->car.visit( Visitor( output, env ) );
                 std::print(output, ")");
             }
         }
@@ -87,7 +87,7 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
         int iteration = 0;
     };
 
-    std::visit( Visitor( output, environment ), expr.rawValue() );
+    expr.visit( Visitor( output, environment ) );
 }
 
 

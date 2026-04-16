@@ -7,7 +7,7 @@ TEST_CASE("Default constructed SExpression is Nil", "[SExpression]")
 {
     SExpression expr;
 
-    REQUIRE(expr.value().type() == Variant::Type::Nil);
+    REQUIRE(expr.type() == Variant::Type::Nil);
 }
 
 TEST_CASE("Creating a cons with rvalues", "[cons]")
@@ -72,13 +72,12 @@ TEST_CASE("Creating a cons with rvalues", "[cons]")
                                                   SExpression{ cons( SExpression{ FundamentalType::Symbol{ 8 } },
                                                                      SExpression{ FundamentalType::Nil{} } ) } );
 
-        REQUIRE(cell->car.value().type() == Variant::Type::Symbol);
-        REQUIRE(cell->car.value().asSymbol() == FundamentalType::Symbol{ 99 });
-        REQUIRE(cell->cdr.value().type() == Variant::Type::ConsCell);
-        REQUIRE(cell->cdr.value().asConsCellPtr()->car.value().type() == Variant::Type::Symbol);
-        REQUIRE(cell->cdr.value().asConsCellPtr()->car.asSymbol() == FundamentalType::Symbol{8});
-
-        REQUIRE(cell->cdr.asConsCellPtr()->cdr.type() == Variant::Type::Nil);
+        REQUIRE(cell->car.type() == Variant::Type::Symbol);
+        REQUIRE(cell->car.asSymbol() == FundamentalType::Symbol{ 99 });
+        REQUIRE(cell->cdr.type() == Variant::Type::ConsCell);
+        REQUIRE(cell->cdr.asConsCell()->car.type() == Variant::Type::Symbol);
+        REQUIRE(cell->cdr.asConsCell()->car.asSymbol() == FundamentalType::Symbol{8});
+        REQUIRE(cell->cdr.asConsCell()->cdr.type() == Variant::Type::Nil);
     }
 }
 
@@ -172,9 +171,9 @@ TEST_CASE("type() returns what type an SExpression is constructed with", "[SExpr
         SExpression expr{ cons(SExpression{ FundamentalType::Symbol{ 3 } }, SExpression{ FundamentalType::Nil{} } ) };
 
         REQUIRE(expr.type() == Variant::Type::ConsCell);
-        REQUIRE(expr.asConsCellPtr()->car.type() == Variant::Type::Symbol);
-        REQUIRE(expr.asConsCellPtr()->car.asSymbol() == FundamentalType::Symbol{3});
-        REQUIRE(expr.asConsCellPtr()->cdr.type() == Variant::Type::Nil);
+        REQUIRE(expr.asConsCell()->car.type() == Variant::Type::Symbol);
+        REQUIRE(expr.asConsCell()->car.asSymbol() == FundamentalType::Symbol{3});
+        REQUIRE(expr.asConsCell()->cdr.type() == Variant::Type::Nil);
     }
 }
 

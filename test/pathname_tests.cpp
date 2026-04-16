@@ -22,7 +22,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Pathname);
+        REQUIRE(result.type() == Variant::Type::Pathname);
         REQUIRE(result.asPathname().u8string() == pathname_value);
     }
 
@@ -36,7 +36,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Pathname);
+        REQUIRE(result.type() == Variant::Type::Pathname);
         REQUIRE(result.asPathname().u8string() == pathname_value);
     }
 
@@ -50,7 +50,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Pathname);
+        REQUIRE(result.type() == Variant::Type::Pathname);
         REQUIRE(result.asPathname().u8string() == u8"/some/path/name");
     }
 
@@ -62,7 +62,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 
     SECTION("pathname from True")
@@ -73,7 +73,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 
     SECTION("pathname from Number")
@@ -84,7 +84,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 
     SECTION("pathname from FixedNumber")
@@ -95,7 +95,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 
     SECTION("pathname from Char")
@@ -106,7 +106,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 
     SECTION("pathname from Function")
@@ -117,7 +117,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 
     SECTION("pathname from Package")
@@ -129,7 +129,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 
     SECTION("pathname from Cons")
@@ -140,6 +140,6 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
         SExpression result = PredefinedFunctions::pathname(lisp_machine.environment(), s);
 
-        REQUIRE(result.value().type() == Variant::Type::Nil);
+        REQUIRE(result.type() == Variant::Type::Nil);
     }
 }

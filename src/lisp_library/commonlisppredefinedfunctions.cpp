@@ -7,49 +7,49 @@ namespace PredefinedFunctions
 
 SExpression null(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::Nil )
+    if ( parameter.type() == Variant::Type::Nil )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression symbolp(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::Symbol )
+    if ( parameter.type() == Variant::Type::Symbol )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression atom(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::ConsCell )
+    if ( parameter.type() == Variant::Type::ConsCell )
         return SExpression::make_nil();
     return SExpression::make_true();
 }
 
 SExpression consp(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::ConsCell )
+    if ( parameter.type() == Variant::Type::ConsCell )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression listp(Environment &, SExpression parameter)
 {
-    if ( (parameter.value().type() == Variant::Type::ConsCell) || (parameter.value().type() == Variant::Type::Nil) )
+    if ( (parameter.type() == Variant::Type::ConsCell) || (parameter.type() == Variant::Type::Nil) )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression numberp(Environment &, SExpression parameter)
 {
-    if ( (parameter.value().type() == Variant::Type::Number) || (parameter.value().type() == Variant::Type::FixedNumber) )
+    if ( (parameter.type() == Variant::Type::Number) || (parameter.type() == Variant::Type::FixedNumber) )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression integerp(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::FixedNumber )
+    if ( parameter.type() == Variant::Type::FixedNumber )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
@@ -62,7 +62,7 @@ SExpression rationalp(Environment &, SExpression)
 
 SExpression floatp(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::Number )
+    if ( parameter.type() == Variant::Type::Number )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
@@ -81,28 +81,28 @@ SExpression complexp(Environment &, SExpression)
 
 SExpression characterp(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::Char )
+    if ( parameter.type() == Variant::Type::Char )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression stringp(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::String )
+    if ( parameter.type() == Variant::Type::String )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression functionp(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::Function )
+    if ( parameter.type() == Variant::Type::Function )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression packagep(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::Package )
+    if ( parameter.type() == Variant::Type::Package )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
@@ -138,7 +138,7 @@ SExpression equalp(Environment &, SExpression )
 
 SExpression logical_not(Environment &, SExpression parameter)
 {
-    if ( parameter.value().type() == Variant::Type::Nil )
+    if ( parameter.type() == Variant::Type::Nil )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
@@ -182,42 +182,42 @@ SExpression pathname(Environment &current_environment, SExpression parameter)
 SExpression car(Environment &, SExpression parameter)
 {
     if ( parameter.type() == Variant::Type::ConsCell )
-        return parameter.asConsCellPtr()->car;
+        return parameter.asConsCell()->car;
     return SExpression::make_nil();
 }
 
 SExpression cdr(Environment &, SExpression parameter)
 {
     if ( parameter.type() == Variant::Type::ConsCell )
-        return parameter.asConsCellPtr()->cdr;
+        return parameter.asConsCell()->cdr;
     return SExpression::make_nil();
 }
 
 SExpression caar(Environment &current_environment, SExpression parameter)
 {
     if ( parameter.type() == Variant::Type::ConsCell )
-        return car( current_environment, parameter.asConsCellPtr()->car );
+        return car( current_environment, parameter.asConsCell()->car );
     return SExpression::make_nil();
 }
 
 SExpression cadr(Environment &current_environment, SExpression parameter)
 {
     if ( parameter.type() == Variant::Type::ConsCell )
-        return cdr( current_environment, parameter.asConsCellPtr()->car );
+        return cdr( current_environment, parameter.asConsCell()->car );
     return SExpression::make_nil();
 }
 
 SExpression cdar(Environment &current_environment, SExpression parameter)
 {
     if ( parameter.type() == Variant::Type::ConsCell )
-        return car( current_environment, parameter.asConsCellPtr()->cdr );
+        return car( current_environment, parameter.asConsCell()->cdr );
     return SExpression::make_nil();
 }
 
 SExpression cddr(Environment &current_environment, SExpression parameter)
 {
     if ( parameter.type() == Variant::Type::ConsCell )
-        return cdr( current_environment, parameter.asConsCellPtr()->cdr );
+        return cdr( current_environment, parameter.asConsCell()->cdr );
     return SExpression::make_nil();
 }
 

@@ -103,9 +103,29 @@ struct SExpression
         return _value->asNil();
     }
 
+    constexpr const FundamentalType::Nil *asNilPtr() const
+    {
+        return _value->asNilPtr();
+    }
+
+    constexpr FundamentalType::Nil *asNilPtr()
+    {
+        return _value->asNilPtr();
+    }
+
     constexpr FundamentalType::True asTrue()
     {
         return _value->asTrue();
+    }
+
+    constexpr const FundamentalType::True *asTruePtr() const
+    {
+        return _value->asTruePtr();
+    }
+
+    constexpr FundamentalType::True *asTruePtr()
+    {
+        return _value->asTruePtr();
     }
 
     constexpr FundamentalType::String &asString()
@@ -118,6 +138,16 @@ struct SExpression
         return _value->asString();
     }
 
+    constexpr const FundamentalType::String *asStringPtr() const
+    {
+        return _value->asStringPtr();
+    }
+
+    constexpr FundamentalType::String *asStringPtr()
+    {
+        return _value->asStringPtr();
+    }
+
     constexpr FundamentalType::Pathname &asPathname()
     {
         return _value->asPathname();
@@ -126,6 +156,16 @@ struct SExpression
     constexpr const FundamentalType::Pathname &asPathname() const
     {
         return _value->asPathname();
+    }
+
+    constexpr const FundamentalType::Pathname *asPathnamePtr() const
+    {
+        return _value->asPathnamePtr();
+    }
+
+    constexpr FundamentalType::Pathname *asPathnamePtr()
+    {
+        return _value->asPathnamePtr();
     }
 
     constexpr FundamentalType::Symbol &asSymbol()
@@ -138,9 +178,29 @@ struct SExpression
         return _value->asSymbol();
     }
 
+    constexpr const FundamentalType::Symbol *asSymbolPtr() const
+    {
+        return _value->asSymbolPtr();
+    }
+
+    constexpr FundamentalType::Symbol *asSymbolPtr()
+    {
+        return _value->asSymbolPtr();
+    }
+
     constexpr FundamentalType::Number asNumber()
     {
         return _value->asNumber();
+    }
+
+    constexpr const FundamentalType::Number *asNumberPtr() const
+    {
+        return _value->asNumberPtr();
+    }
+
+    constexpr FundamentalType::Number *asNumberPtr()
+    {
+        return _value->asNumberPtr();
     }
 
     constexpr FundamentalType::FixedNumber asFixedNumber()
@@ -148,14 +208,44 @@ struct SExpression
         return _value->asFixedNumber();
     }
 
+    constexpr const FundamentalType::FixedNumber *asFixedNumberPtr() const
+    {
+        return _value->asFixedNumberPtr();
+    }
+
+    constexpr FundamentalType::FixedNumber *asFixedNumberPtr()
+    {
+        return _value->asFixedNumberPtr();
+    }
+
     constexpr FundamentalType::Char asChar()
     {
         return _value->asChar();
     }
 
+    constexpr const FundamentalType::Char *asChar() const
+    {
+        return _value->asCharPtr();
+    }
+
+    constexpr FundamentalType::Char *asCharPtr()
+    {
+        return _value->asCharPtr();
+    }
+
     constexpr FundamentalType::Function asFunction()
     {
         return _value->asFunction();
+    }
+
+    constexpr const FundamentalType::Function *asFunctionPtr() const
+    {
+        return _value->asFunctionPtr();
+    }
+
+    constexpr FundamentalType::Function *asFunctionPtr()
+    {
+        return _value->asFunctionPtr();
     }
 
     FundamentalType::PackagePtr asPackage()
@@ -168,36 +258,46 @@ struct SExpression
         return _value->asPackage();
     }
 
-    FundamentalType::ConsCellPtr asConsCellPtr()
+    const FundamentalType::PackagePtr *asPackagePtr() const
+    {
+        return _value->asPackagePtr();
+    }
+
+    FundamentalType::PackagePtr *asPackagePtr()
+    {
+        return _value->asPackagePtr();
+    }
+
+    FundamentalType::ConsCellPtr asConsCell()
+    {
+        return _value->asConsCell();
+    }
+
+    const FundamentalType::ConsCellPtr asConsCell() const
+    {
+        return _value->asConsCell();
+    }
+
+    const FundamentalType::ConsCellPtr *asConsCellPtr() const
     {
         return _value->asConsCellPtr();
     }
 
-    const FundamentalType::ConsCellPtr asConsCellPtr() const
+    FundamentalType::ConsCellPtr *asConsCellPtr()
     {
         return _value->asConsCellPtr();
-    }
-
-    Variant &value()
-    {
-        return *_value;
-    }
-
-    const Variant &value() const
-    {
-        return *_value;
-    }
-
-    const Variant::value_type &rawValue() const
-    {
-        return _value->rawValue();
     }
 
     bool isList() const;
 
     bool selfEvaluating() const
     {
-        return value().type() != Variant::Type::Symbol && !isList();
+        return type() != Variant::Type::Symbol && !isList();
+    }
+
+    void visit(auto &&visitor) const
+    {
+        _value->visit(visitor);
     }
 protected:
     std::shared_ptr<Variant> _value{ std::make_shared<Variant>( FundamentalType::Nil{} ) };
@@ -210,22 +310,22 @@ struct ConsCell
 
     bool isList() const
     {
-        return cdr.value().type() == Variant::Type::ConsCell;
+        return cdr.type() == Variant::Type::ConsCell;
     }
 
     bool isEndList() const
     {
-        return cdr.value().type() == Variant::Type::Nil;
+        return cdr.type() == Variant::Type::Nil;
     }
 
     bool isDottedPair() const
     {
-        return (car.value().type() != Variant::Type::ConsCell) &&
-               (cdr.value().type() != Variant::Type::ConsCell);
+        return (car.type() != Variant::Type::ConsCell) &&
+               (cdr.type() != Variant::Type::ConsCell);
     }
 };
 
 inline bool SExpression::isList() const
 {
-    return value().type() == Variant::Type::ConsCell && value().asConsCellPtr()->isList();
+    return type() == Variant::Type::ConsCell && asConsCell()->isList();
 }

@@ -84,14 +84,44 @@ public:
         return static_cast<enum Type>( _value.index() );
     }
 
+    constexpr std::size_t index() const
+    {
+        return _value.index();
+    }
+
+    constexpr bool valueless_by_exception() const noexcept
+    {
+        return _value.valueless_by_exception();
+    }
+
     constexpr FundamentalType::Nil asNil()
     {
         return std::get<FundamentalType::Nil>(_value);
     }
 
+    constexpr const FundamentalType::Nil *asNilPtr() const
+    {
+        return std::get_if<FundamentalType::Nil>(&_value);
+    }
+
+    constexpr FundamentalType::Nil *asNilPtr()
+    {
+        return std::get_if<FundamentalType::Nil>(&_value);
+    }
+
     constexpr FundamentalType::True asTrue()
     {
         return std::get<FundamentalType::True>(_value);
+    }
+
+    constexpr const FundamentalType::True *asTruePtr() const
+    {
+        return std::get_if<FundamentalType::True>(&_value);
+    }
+
+    constexpr FundamentalType::True *asTruePtr()
+    {
+        return std::get_if<FundamentalType::True>(&_value);
     }
 
     constexpr FundamentalType::String &asString()
@@ -104,6 +134,16 @@ public:
         return std::get<FundamentalType::String>(_value);
     }
 
+    constexpr const FundamentalType::String *asStringPtr() const
+    {
+        return std::get_if<FundamentalType::String>(&_value);
+    }
+
+    constexpr FundamentalType::String *asStringPtr()
+    {
+        return std::get_if<FundamentalType::String>(&_value);
+    }
+
     constexpr FundamentalType::Pathname &asPathname()
     {
         return std::get<FundamentalType::Pathname>(_value);
@@ -112,6 +152,16 @@ public:
     constexpr const FundamentalType::Pathname &asPathname() const
     {
         return std::get<FundamentalType::Pathname>(_value);
+    }
+
+    constexpr FundamentalType::Pathname *asPathnamePtr()
+    {
+        return std::get_if<FundamentalType::Pathname>(&_value);
+    }
+
+    constexpr const FundamentalType::Pathname *asPathnamePtr() const
+    {
+        return std::get_if<FundamentalType::Pathname>(&_value);
     }
 
     constexpr FundamentalType::Symbol &asSymbol()
@@ -124,9 +174,29 @@ public:
         return std::get<FundamentalType::Symbol>(_value);
     }
 
+    constexpr FundamentalType::Symbol *asSymbolPtr()
+    {
+        return std::get_if<FundamentalType::Symbol>(&_value);
+    }
+
+    constexpr const FundamentalType::Symbol *asSymbolPtr() const
+    {
+        return std::get_if<FundamentalType::Symbol>(&_value);
+    }
+
     constexpr FundamentalType::Number asNumber()
     {
         return std::get<FundamentalType::Number>(_value);
+    }
+
+    constexpr const FundamentalType::Number *asNumberPtr() const
+    {
+        return std::get_if<FundamentalType::Number>(&_value);
+    }
+
+    constexpr FundamentalType::Number *asNumberPtr()
+    {
+        return std::get_if<FundamentalType::Number>(&_value);
     }
 
     constexpr FundamentalType::FixedNumber asFixedNumber()
@@ -134,14 +204,44 @@ public:
         return std::get<FundamentalType::FixedNumber>(_value);
     }
 
+    constexpr const FundamentalType::FixedNumber *asFixedNumberPtr() const
+    {
+        return std::get_if<FundamentalType::FixedNumber>(&_value);
+    }
+
+    constexpr FundamentalType::FixedNumber *asFixedNumberPtr()
+    {
+        return std::get_if<FundamentalType::FixedNumber>(&_value);
+    }
+
     constexpr FundamentalType::Char asChar()
     {
         return std::get<FundamentalType::Char>(_value);
     }
 
+    constexpr const FundamentalType::Char *asCharPtr() const
+    {
+        return std::get_if<FundamentalType::Char>(&_value);
+    }
+
+    constexpr FundamentalType::Char *asCharPtr()
+    {
+        return std::get_if<FundamentalType::Char>(&_value);
+    }
+
     constexpr FundamentalType::Function asFunction()
     {
         return std::get<FundamentalType::Function>(_value);
+    }
+
+    constexpr const FundamentalType::Function *asFunctionPtr() const
+    {
+        return std::get_if<FundamentalType::Function>(&_value);
+    }
+
+    constexpr FundamentalType::Function *asFunctionPtr()
+    {
+        return std::get_if<FundamentalType::Function>(&_value);
     }
 
     FundamentalType::PackagePtr asPackage()
@@ -154,19 +254,44 @@ public:
         return std::get<FundamentalType::PackagePtr>(_value);
     }
 
-    FundamentalType::ConsCellPtr asConsCellPtr()
+    const FundamentalType::PackagePtr *asPackagePtr() const
+    {
+        return std::get_if<FundamentalType::PackagePtr>(&_value);
+    }
+
+    FundamentalType::PackagePtr *asPackagePtr()
+    {
+        return std::get_if<FundamentalType::PackagePtr>(&_value);
+    }
+
+    FundamentalType::ConsCellPtr asConsCell()
     {
         return std::get<FundamentalType::ConsCellPtr>(_value);
     }
 
-    const FundamentalType::ConsCellPtr asConsCellPtr() const
+    const FundamentalType::ConsCellPtr asConsCell() const
     {
         return std::get<FundamentalType::ConsCellPtr>(_value);
+    }
+
+    FundamentalType::ConsCellPtr *asConsCellPtr()
+    {
+        return std::get_if<FundamentalType::ConsCellPtr>(&_value);
+    }
+
+    const FundamentalType::ConsCellPtr *asConsCellPtr() const
+    {
+        return std::get_if<FundamentalType::ConsCellPtr>(&_value);
     }
 
     constexpr const value_type &rawValue() const
     {
         return _value;
+    }
+
+    void visit(auto &&visitor) const
+    {
+        std::visit( visitor, _value );
     }
 protected:
     value_type _value;

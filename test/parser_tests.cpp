@@ -19,7 +19,7 @@ TEST_CASE("read_expression parses Symbol", "[Parser]")
         REQUIRE(res.has_value());
         SExpression e = res.value();
 
-        REQUIRE(e.value().type() == Variant::Type::Symbol);
+        REQUIRE(e.type() == Variant::Type::Symbol);
     }
 }
 
@@ -391,7 +391,7 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         SExpression e = res.value();
 
         REQUIRE(e.type() == Variant::Type::ConsCell);
-        auto cell = e.asConsCellPtr();
+        auto cell = e.asConsCell();
         REQUIRE(cell != nullptr);
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->cdr.type() == Variant::Type::Nil);
@@ -412,12 +412,12 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         SExpression e = res.value();
 
         REQUIRE(e.type() == Variant::Type::ConsCell);
-        auto cell = e.asConsCellPtr();
+        auto cell = e.asConsCell();
         REQUIRE(cell != nullptr);
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->cdr.type() == Variant::Type::ConsCell);
 
-        auto cell2 = cell->cdr.asConsCellPtr();
+        auto cell2 = cell->cdr.asConsCell();
         REQUIRE(cell2->car.type() == Variant::Type::Symbol);
         REQUIRE(cell2->cdr.type() == Variant::Type::Nil);
     }
@@ -436,7 +436,7 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         SExpression e = res.value();
 
         REQUIRE(e.type() == Variant::Type::ConsCell);
-        auto cell = e.asConsCellPtr();
+        auto cell = e.asConsCell();
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         // cdr should be a symbol 'b'
         REQUIRE(cell->cdr.type() == Variant::Type::Symbol);
@@ -456,22 +456,22 @@ TEST_CASE("read_expression parses lists and dotted pairs", "[Parser]")
         SExpression e = res.value();
 
         REQUIRE(e.type() == Variant::Type::ConsCell);
-        auto cell = e.asConsCellPtr();
+        auto cell = e.asConsCell();
 
         // Symbol for "a"
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->cdr.type() == Variant::Type::ConsCell); // next cell for "(b c)"
-        auto rest = cell->cdr.asConsCellPtr();
+        auto rest = cell->cdr.asConsCell();
 
         REQUIRE(rest->car.type() == Variant::Type::ConsCell); // "(b c)"
         REQUIRE(rest->cdr.type() == Variant::Type::Nil);
 
-        auto inner = rest->car.asConsCellPtr();
+        auto inner = rest->car.asConsCell();
 
         REQUIRE(inner->car.type() == Variant::Type::Symbol); // "b"
         REQUIRE(inner->cdr.type() == Variant::Type::ConsCell);
 
-        auto inner_rest = inner->cdr.asConsCellPtr();
+        auto inner_rest = inner->cdr.asConsCell();
 
         REQUIRE(inner_rest->car.type() == Variant::Type::Symbol); // "c"
         REQUIRE(inner_rest->cdr.type() == Variant::Type::Nil);
@@ -495,12 +495,12 @@ TEST_CASE("read_expression handles quote", "[Parser]")
 
     REQUIRE(e.type() == Variant::Type::ConsCell);
 
-    FundamentalType::ConsCellPtr cell = e.asConsCellPtr();
+    FundamentalType::ConsCellPtr cell = e.asConsCell();
 
     REQUIRE(cell->car.type() == Variant::Type::Symbol); // quote symbol
     REQUIRE(cell->cdr.type() == Variant::Type::ConsCell);
 
-    FundamentalType::ConsCellPtr tail = cell->cdr.asConsCellPtr();
+    FundamentalType::ConsCellPtr tail = cell->cdr.asConsCell();
 
     REQUIRE(tail->car.type() == Variant::Type::Symbol); // quoted symbol x
     REQUIRE(tail->cdr.type() == Variant::Type::Nil);
