@@ -115,4 +115,20 @@ SExpression open_stream_p(Environment &current_environment, SExpression paramete
 SExpression input_stream_p(Environment &current_environment, SExpression parameter);
 SExpression output_stream_p(Environment &current_environment, SExpression parameter);
 ///@}
+
+/** @addtogroup ConsOperations Functions that operate on cons cells
+ *  
+ *  @{
+ *
+ *  The following functions use cons cells in some way.
+ */
+//SExpression cons(Environment &current_environment, SExpression parameter);
+SExpression car(Environment &current_environment, SExpression parameter);
+SExpression cdr(Environment &current_environment, SExpression parameter);
+SExpression caar(Environment &current_environment, SExpression parameter);
+SExpression cadr(Environment &current_environment, SExpression parameter);
+SExpression cdar(Environment &current_environment, SExpression parameter);
+SExpression cddr(Environment &current_environment, SExpression parameter);
+///@}
+
 }

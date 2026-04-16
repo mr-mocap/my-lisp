@@ -178,4 +178,47 @@ SExpression pathname(Environment &current_environment, SExpression parameter)
 //SExpression host_namestring(Environment &current_environment, SExpression parameter);
 //SExpression enough_namestring(Environment &current_environment, SExpression parameter);
 //SExpression user_homedir_pathname(Environment &current_environment, SExpression parameter);
+
+SExpression car(Environment &, SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::ConsCell )
+        return parameter.asConsCellPtr()->car;
+    return SExpression::make_nil();
+}
+
+SExpression cdr(Environment &, SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::ConsCell )
+        return parameter.asConsCellPtr()->cdr;
+    return SExpression::make_nil();
+}
+
+SExpression caar(Environment &current_environment, SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::ConsCell )
+        return car( current_environment, parameter.asConsCellPtr()->car );
+    return SExpression::make_nil();
+}
+
+SExpression cadr(Environment &current_environment, SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::ConsCell )
+        return cdr( current_environment, parameter.asConsCellPtr()->car );
+    return SExpression::make_nil();
+}
+
+SExpression cdar(Environment &current_environment, SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::ConsCell )
+        return car( current_environment, parameter.asConsCellPtr()->cdr );
+    return SExpression::make_nil();
+}
+
+SExpression cddr(Environment &current_environment, SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::ConsCell )
+        return cdr( current_environment, parameter.asConsCellPtr()->cdr );
+    return SExpression::make_nil();
+}
+
 }
