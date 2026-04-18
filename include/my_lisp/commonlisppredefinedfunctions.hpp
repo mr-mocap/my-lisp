@@ -145,4 +145,14 @@ SExpression second(Environment &current_environment, SExpression parameter);
 
 SExpression setf(Environment &current_environment, SExpression parameter);
 
+/** @addtogroup PrintOperations Functions that print objects
+ *  
+ *  @{
+ *
+ *  The following functions allow printing objects in some way.
+ */
+SExpression prin1(Environment &current_environment, SExpression parameter);
+SExpression print(Environment &current_environment, SExpression parameter);
+///@}
+
 }
