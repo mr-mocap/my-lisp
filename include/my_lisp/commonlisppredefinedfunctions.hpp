@@ -122,7 +122,7 @@ SExpression output_stream_p(Environment &current_environment, SExpression parame
  *
  *  The following functions use cons cells in some way.
  */
-//SExpression cons(Environment &current_environment, SExpression parameter);
+SExpression cons(Environment &current_environment, SExpression parameter);
 SExpression car(Environment &current_environment, SExpression parameter);
 SExpression cdr(Environment &current_environment, SExpression parameter);
 SExpression caar(Environment &current_environment, SExpression parameter);
@@ -130,5 +130,19 @@ SExpression cadr(Environment &current_environment, SExpression parameter);
 SExpression cdar(Environment &current_environment, SExpression parameter);
 SExpression cddr(Environment &current_environment, SExpression parameter);
 ///@}
+
+/** @addtogroup ListOperations Functions that operate on lists
+ *  
+ *  @{
+ *
+ *  The following functions use lists in some way.
+ */
+SExpression first(Environment &current_environment, SExpression parameter);
+SExpression rest(Environment &current_environment, SExpression parameter);
+
+SExpression second(Environment &current_environment, SExpression parameter);
+///@}
+
+SExpression setf(Environment &current_environment, SExpression parameter);
 
 }

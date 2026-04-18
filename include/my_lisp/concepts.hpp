@@ -2,6 +2,7 @@
 
 #include <my_lisp/types/fundamental.hpp>
 #include <my_lisp/types/symbol.hpp>
+#include <my_lisp/sexpression.hpp>
 
 
 namespace Concepts
@@ -44,4 +45,8 @@ template <typename T>
 concept VariantLike = NilLike<T>     || TrueLike<T>        || StringLike<T> || PathnameLike<T> || SymbolLike<T> ||
                       NumberLike<T>  || FixedNumberLike<T> || CharLike<T>   || FunctionLike<T> ||
                       PackageLike<T> || ConsCellLike<T>;
+
+template <typename T>
+concept SExpressionLike = std::same_as<std::remove_cvref_t<T>, SExpression>;
+
 }

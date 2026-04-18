@@ -34,7 +34,7 @@ struct SExpression
 
     SExpression(const SExpression &other)
         :
-        _value( std::make_shared<Variant>( *other._value ) )
+        _value( other._value )
     {
     }
 
@@ -299,8 +299,20 @@ struct SExpression
     {
         _value->visit(visitor);
     }
+
+    constexpr operator bool()
+    {
+        // Since only nil is false in Lisp, we can return true for all other types, including true.
+        return type() != Variant::Type::Nil;
+    }
 protected:
     std::shared_ptr<Variant> _value{ std::make_shared<Variant>( FundamentalType::Nil{} ) };
+
+    // This compares the two values for being the same underlying object (i.e. they point to the same memory location).
+    friend bool operator ==(const SExpression &lhs, const SExpression &rhs)
+    {
+        return lhs._value == rhs._value;
+    }
 };
 
 struct ConsCell
@@ -310,7 +322,7 @@ struct ConsCell
 
     bool isList() const
     {
-        return cdr.type() == Variant::Type::ConsCell;
+        return (cdr.type() == Variant::Type::ConsCell) || isEndList();
     }
 
     bool isEndList() const
