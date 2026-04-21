@@ -29,7 +29,10 @@ int main(void)
             std::println("Parse error: {} at position {}", result.error().message, result.error().position);
             break; // Don't continue
         }
-        print( result.value(), lisp_machine.environment(), std::cout );
+
+        SExpression eval_result = PredefinedFunctions::eval( lisp_machine.environment(), result.value() );
+
+        PredefinedFunctions::print( lisp_machine.environment(), eval_result );
         std::println();
     }
 

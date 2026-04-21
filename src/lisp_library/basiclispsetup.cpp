@@ -21,7 +21,34 @@ auto CommonLispSymbols = std::to_array<std::pair<FundamentalType::StringView, SE
     { u8"FUNCTIONP",  { PredefinedFunctions::functionp  } },
     { u8"PACKAGEP",   { PredefinedFunctions::packagep  } },
 
-    { u8"NOT",     { PredefinedFunctions::logical_not  } }
+    { u8"EQ",      { PredefinedFunctions::eq     } },
+    { u8"EQL",     { PredefinedFunctions::eql    } },
+    { u8"EQUAL",   { PredefinedFunctions::equal  } },
+    { u8"EQUALP",  { PredefinedFunctions::equalp } },
+
+    { u8"NOT",     { PredefinedFunctions::logical_not  } },
+
+    { u8"PATHNAME",  { PredefinedFunctions::pathname } },
+
+    { u8"CONS",  { PredefinedFunctions::cons } },
+    { u8"CAR",   { PredefinedFunctions::car  } },
+    { u8"CDR",   { PredefinedFunctions::cdr  } },
+    { u8"CAAR",  { PredefinedFunctions::caar } },
+    { u8"CADR",  { PredefinedFunctions::cadr } },
+    { u8"CDAR",  { PredefinedFunctions::cdar } },
+    { u8"CDDR",  { PredefinedFunctions::cddr } },
+
+    { u8"FIRST",  { PredefinedFunctions::first  } },
+    { u8"REST",   { PredefinedFunctions::rest   } },
+    { u8"SECOND", { PredefinedFunctions::second } },
+    { u8"ENDP",   { PredefinedFunctions::endp   } },
+
+    { u8"SETF", { PredefinedFunctions::setf } },
+
+    { u8"PRIN1", { PredefinedFunctions::prin1 } },
+    { u8"PRINT", { PredefinedFunctions::print } },
+
+    { u8"EVAL", { PredefinedFunctions::eval } }
     });
 
 void BasicLispSetup::create_standard_packages()
@@ -48,5 +75,6 @@ void BasicLispSetup::create_standard_packages()
         FundamentalType::PackagePtr clu_pkg = m_package_collection.make_package(u8"COMMON-LISP-USER");
 
         m_package_collection.add_package(clu_pkg);
+        clu_pkg->use_package( u8"COMMON-LISP" );
     }
 }

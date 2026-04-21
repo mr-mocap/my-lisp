@@ -2,46 +2,25 @@
 #include <cstdlib>
 #include <iostream>
 
-void create_standard_packages(PackageCollection &pc)
-{
-    {
-        PackagePtr standard_pkg = pc.make_package(u8"KEYWORD");
-
-        pc.add_package(standard_pkg);
-    }
-    {
-        PackagePtr cl_pkg = pc.make_package(u8"COMMON-LISP");
-
-        pc.add_package(cl_pkg);
-    }
-    {
-        PackagePtr clu_pkg = pc.make_package(u8"COMMON-LISP-USER");
-
-        pc.add_package(clu_pkg);
-    }
-}
-
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main()
 {
-    PackageCollection package_collection;
+    BasicLispSetup lisp_machine;
 
-    create_standard_packages(package_collection);
-
-    Environment global_environment( package_collection.find_package(u8"COMMON-LISP-USER"),
-                                    package_collection);
+    lisp_machine.setup();
     Reader    reader;
     
     while ( true )
     {
         std::cout << "> " << std::flush;
 
-        ParseResult result = reader.read_expression(global_environment);
+        ParseResult result = reader.read_expression( lisp_machine.environment() );
 
         if ( result )
         {
-            print( result.value(), global_environment, std::cout );
-            std::cout << std::endl;
+            SExpression eval_result = PredefinedFunctions::eval( lisp_machine.environment(), result.value() );
+
+            PredefinedFunctions::print( lisp_machine.environment(), eval_result );
         }
         else
         {

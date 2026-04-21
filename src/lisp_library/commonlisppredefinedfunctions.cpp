@@ -2,12 +2,38 @@
 #include <my_lisp/environment.hpp>
 #include <my_lisp/contract_helpers.hpp>
 
+namespace
+{
+
+SExpression ExtractParameter(SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::ConsCell )
+        return (*parameter.asConsCellPtr())->car;
+
+    return parameter;
+}
+
+bool IsSpecialOperator(SExpression parameter)
+{
+    if ( parameter.type() == Variant::Type::Symbol )
+    {
+#if 0
+        "block", "catch", "eval-when", "flet", "function", "go", "if", "labels", "let",
+        "let*", "load-time-value", "locally", "macrolet", "multiple-value-call", "multiple-value-prog1", "progn", "progv", "quote",
+        "return-from", "setq", "symbol-macrolet", "tagbody", "the", "throw", "unwind-protect"
+#endif
+    }
+    return SExpression::make_nil();
+}
+
+}
 
 namespace PredefinedFunctions
 {
 
 SExpression null(Environment &, SExpression parameter)
 {
+    // Returns true if parameter is an empty list, false (NIL) otherwise.
     if ( parameter.type() == Variant::Type::Nil )
         return SExpression::make_true();
     return SExpression::make_nil();
@@ -34,21 +60,18 @@ SExpression consp(Environment &, SExpression parameter)
     return SExpression::make_nil();
 }
 
-SExpression listp(Environment &, SExpression parameter)
+SExpression listp(Environment &current_environment, SExpression parameter)
 {
-    if ( (parameter.type() == Variant::Type::ConsCell) )
-    {
-        FundamentalType::ConsCellPtr cons_cell = parameter.asConsCell();
-
-        if ( cons_cell->isList() )
-            return SExpression::make_true();
-    }
+    if ( consp(current_environment, parameter) )
+        return SExpression::make_true();
     return SExpression::make_nil();
 }
 
 SExpression numberp(Environment &, SExpression parameter)
 {
-    if ( (parameter.type() == Variant::Type::Number) || (parameter.type() == Variant::Type::FixedNumber) )
+    Variant::Type parameter_type = parameter.type();
+
+    if ( (parameter_type == Variant::Type::Number) || (parameter_type == Variant::Type::FixedNumber) )
         return SExpression::make_true();
     return SExpression::make_nil();
 }
@@ -235,7 +258,7 @@ SExpression cons(Environment &current_environment, SExpression parameter)
     if ( listp(current_environment, parameter) )
     {
         SExpression first_parameter  = first(current_environment, parameter);
-        SExpression second_parameter = first( current_environment, rest(current_environment, parameter) );
+        SExpression second_parameter = second( current_environment, parameter );
 
         return SExpression::make_cons(first_parameter, second_parameter);
     }
@@ -299,6 +322,18 @@ SExpression rest(Environment &current_environment, SExpression parameter)
 SExpression second(Environment &current_environment, SExpression parameter)
 {
     return first( current_environment, rest(current_environment, parameter) );
+}
+
+SExpression endp(Environment &current_environment, SExpression parameter)
+{
+    if ( null(current_environment, parameter) )
+        return SExpression::make_true();
+    if ( cons(current_environment, parameter) )
+        return SExpression::make_nil();
+
+    // Error for anything else
+    // TODO: Handle the error
+    return SExpression::make_nil();
 }
 
 SExpression setf(Environment &, SExpression )
@@ -378,13 +413,9 @@ SExpression prin1(Environment &current_environment, SExpression parameter)
         }
         void operator()(FundamentalType::ConsCellPtr cons) const
         {
-            // Dotted pair?
-            if ( cons->isDottedPair() )
+            if ( cons->isEndList() )
             {
-                std::print(output, "(");
                 cons->car.visit( Visitor( output, env ) );
-                std::print(output, " . ");
-                cons->cdr.visit( Visitor( output, env ) );
                 std::print(output, ")");
             }
             else if ( cons->isList() )
@@ -396,9 +427,12 @@ SExpression prin1(Environment &current_environment, SExpression parameter)
                 std::print(output, " ");
                 cons->cdr.visit( Visitor( output, env, iteration + 1 ) );
             }
-            else if ( cons->isEndList() )
+            else if ( cons->isDottedPair() )
             {
+                std::print(output, "(");
                 cons->car.visit( Visitor( output, env ) );
+                std::print(output, " . ");
+                cons->cdr.visit( Visitor( output, env ) );
                 std::print(output, ")");
             }
         }
@@ -418,6 +452,62 @@ SExpression print(Environment &current_environment, SExpression parameter)
     prin1( current_environment, parameter );
     std::print( std::cout, " " );
     return parameter;
+}
+
+SExpression eval(Environment &current_environment, SExpression form)
+{
+    if ( atom(current_environment, form) )
+    {
+        // Everything BUT a Symbol is self-evaluating...
+        if ( form.selfEvaluating() )
+            return form;
+
+        ASSERT(form.type() == Variant::Type::Symbol, "Assert Failed: form is not a Symbol");
+
+        if ( SExpression *value = current_environment.find_symbol_value(*form.asSymbolPtr()) )
+            return *value;
+
+        // ERROR: Symbol not found in environment, return nil for now (TODO: Handle this better, maybe throw an error or something)
+
+        return SExpression::make_nil();
+    }
+
+    ASSERT( listp(current_environment, form), "Assert Failed: form is not a list");
+
+    // Is this a special form?
+
+    // eval() the list element by element
+    SExpression first_element = first(current_environment, form);
+
+    // Let's go ahead and just resolve the first element.  CommonLisp spec requires that the first element NOT
+    // be evaluated if it's a symbol that names a special form or macro, but we can handle that later
+    // when we implement special forms and macros.  For now, we'll just resolve the first element if it's
+    // a symbol, and then we'll handle function application if it turns out to be a function.
+    if ( first_element.type() == Variant::Type::Symbol )
+    {
+        if (SExpression *value = current_environment.find_symbol_value( *first_element.asSymbolPtr() ) )
+            (*form.asConsCellPtr())->car = first_element = *value;
+    }
+
+    // Handle function application if the first element evaluates to a function
+    if ( first_element.type() == Variant::Type::Function )
+    {
+        // First, evaluate the remaining elements of the list from left to right...
+        SExpression rest_of_elements = rest(current_environment, form);
+
+        rest_of_elements = eval(current_environment, rest_of_elements);
+
+        // Call the function with the arguments...
+        return first_element.asFunction()(current_environment, rest_of_elements);
+    }
+
+    // Macro?
+    // TODO
+
+    // Special form?
+    // TODO
+
+    return form;
 }
 
 }
