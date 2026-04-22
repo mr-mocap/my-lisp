@@ -43,11 +43,12 @@ auto CommonLispSymbols = std::to_array<std::pair<FundamentalType::StringView, SE
     { u8"SECOND", { PredefinedFunctions::second } },
     { u8"ENDP",   { PredefinedFunctions::endp   } },
 
-    { u8"SETF", { PredefinedFunctions::setf } },
+    //{ u8"SETF", { PredefinedFunctions::setf } },
 
     { u8"PRIN1", { PredefinedFunctions::prin1 } },
     { u8"PRINT", { PredefinedFunctions::print } },
 
+    { u8"READ", { PredefinedFunctions::read } },
     { u8"EVAL", { PredefinedFunctions::eval } }
     });
 

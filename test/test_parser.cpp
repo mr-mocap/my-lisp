@@ -9,7 +9,7 @@ int main(void)
 
     lisp_machine.setup();
 
-    Reader reader;
+    //Reader reader;
     
     while ( true )
     {
@@ -17,23 +17,15 @@ int main(void)
 
         std::print("{} > ", text_io::to_string_view(current_package->name()));
 
-        ParseResult result = reader.read_expression(lisp_machine.environment());
+        SExpression result = PredefinedFunctions::read( lisp_machine.environment(), SExpression() );
 
-        if ( !result )
+        if ( result )
         {
-            if ( result.error().kind == ParseError::UnexpectedEOF )
-            {
-                std::println("Exiting...");
-                break;
-            }
-            std::println("Parse error: {} at position {}", result.error().message, result.error().position);
-            break; // Don't continue
+            SExpression eval_result = PredefinedFunctions::eval( lisp_machine.environment(), result );
+
+            PredefinedFunctions::print( lisp_machine.environment(), eval_result );
+            std::println();
         }
-
-        SExpression eval_result = PredefinedFunctions::eval( lisp_machine.environment(), result.value() );
-
-        PredefinedFunctions::print( lisp_machine.environment(), eval_result );
-        std::println();
     }
 
     return EXIT_SUCCESS;

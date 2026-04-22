@@ -38,7 +38,7 @@ struct SExpression
     {
     }
 
-    SExpression(SExpression &&other)
+    SExpression(SExpression &&other) noexcept
         :
         _value( std::move(other._value) )
     {

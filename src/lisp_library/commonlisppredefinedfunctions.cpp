@@ -1,6 +1,39 @@
 #include <my_lisp/commonlisppredefinedfunctions.hpp>
 #include <my_lisp/environment.hpp>
 #include <my_lisp/contract_helpers.hpp>
+#include <my_lisp/reader.hpp>
+#include <algorithm>
+#include <array>
+#include <print>
+
+
+static const std::array<FundamentalType::StringView, 25> SpecialOperatorNames{
+    u8"block",
+    u8"catch",
+    u8"eval-when",
+    u8"flet",
+    u8"function",
+    u8"go",
+    u8"if",
+    u8"labels",
+    u8"let",
+    u8"let*",
+    u8"load-time-value",
+    u8"locally",
+    u8"macrolet",
+    u8"multiple-value-call",
+    u8"multiple-value-prog1",
+    u8"progn",
+    u8"progv",
+    u8"quote",
+    u8"return-from",
+    u8"setq",
+    u8"symbol-macrolet",
+    u8"tagbody",
+    u8"the",
+    u8"throw",
+    u8"unwind-protect"
+};
 
 namespace
 {
@@ -13,17 +46,23 @@ SExpression ExtractParameter(SExpression parameter)
     return parameter;
 }
 
-bool IsSpecialOperator(SExpression parameter)
+bool IsSpecialOperator(Environment &current_environment, SExpression parameter)
 {
     if ( parameter.type() == Variant::Type::Symbol )
     {
-#if 0
-        "block", "catch", "eval-when", "flet", "function", "go", "if", "labels", "let",
-        "let*", "load-time-value", "locally", "macrolet", "multiple-value-call", "multiple-value-prog1", "progn", "progv", "quote",
-        "return-from", "setq", "symbol-macrolet", "tagbody", "the", "throw", "unwind-protect"
-#endif
+        FundamentalType::StringView symbol_name = current_environment.symbol_name( parameter.asSymbol() );
+
+        if ( symbol_name.empty() )
+            return false;
+
+        return std::ranges::contains( SpecialOperatorNames, symbol_name );
     }
-    return SExpression::make_nil();
+    return false;
+}
+
+bool IsMacro(Environment &, SExpression )
+{
+    return false;
 }
 
 }
@@ -336,27 +375,27 @@ SExpression endp(Environment &current_environment, SExpression parameter)
     return SExpression::make_nil();
 }
 
-SExpression setf(Environment &, SExpression )
-{
-#if 0
-    if ( listp(current_environment, parameter) )
-    {
-        // TODO: Support pairs of values to set, like (setf a 1 b 2 c 3)
-        SExpression first_parameter  = first(current_environment, parameter);
-        SExpression second_parameter = first(current_environment, rest(current_environment, parameter) );
-
-        if ( first_parameter.type() == Variant::Type::Symbol )
-        {
-            if ( SExpression *symbol_value = current_environment.find_symbol_value(first_parameter.asSymbol()) )
-            {
-                *symbol_value = second_parameter;
-                return second_parameter;
-            }
-        }
-    }
-#endif
-    return SExpression::make_nil();
-}
+//SExpression setf(Environment &, SExpression )
+//{
+//#if 0
+//    if ( listp(current_environment, parameter) )
+//    {
+//        // TODO: Support pairs of values to set, like (setf a 1 b 2 c 3)
+//        SExpression first_parameter  = first(current_environment, parameter);
+//        SExpression second_parameter = first(current_environment, rest(current_environment, parameter) );
+//
+//        if ( first_parameter.type() == Variant::Type::Symbol )
+//        {
+//            if ( SExpression *symbol_value = current_environment.find_symbol_value(first_parameter.asSymbol()) )
+//            {
+//                *symbol_value = second_parameter;
+//                return second_parameter;
+//            }
+//        }
+//    }
+//#endif
+//    return SExpression::make_nil();
+//}
 
 SExpression prin1(Environment &current_environment, SExpression parameter)
 {
@@ -454,6 +493,25 @@ SExpression print(Environment &current_environment, SExpression parameter)
     return parameter;
 }
 
+SExpression read(Environment &current_environment, SExpression )
+{
+    Reader input( std::cin );
+
+    ParseResult result = input.read_expression( current_environment );
+
+    if ( !result )
+    {
+        if ( result.error().kind == ParseError::UnexpectedEOF )
+        {
+            std::println("EOF");
+            return SExpression::make_nil();
+        }
+        std::println("Parse error: {} at position {}", result.error().message, result.error().position);
+        return SExpression::make_nil();
+    }
+    return result.value();
+}
+
 SExpression eval(Environment &current_environment, SExpression form)
 {
     if ( atom(current_environment, form) )
@@ -474,8 +532,6 @@ SExpression eval(Environment &current_environment, SExpression form)
 
     ASSERT( listp(current_environment, form), "Assert Failed: form is not a list");
 
-    // Is this a special form?
-
     // eval() the list element by element
     SExpression first_element = first(current_environment, form);
 
@@ -485,6 +541,16 @@ SExpression eval(Environment &current_environment, SExpression form)
     // a symbol, and then we'll handle function application if it turns out to be a function.
     if ( first_element.type() == Variant::Type::Symbol )
     {
+        // Is this a special form?
+        if ( IsSpecialOperator(current_environment, first_element) )
+        {
+            // TODO: Implement Me!
+        }
+        else if ( IsMacro(current_environment, first_element) )
+        {
+            // TODO: Implement Macro Expansion
+        }
+
         if (SExpression *value = current_environment.find_symbol_value( *first_element.asSymbolPtr() ) )
             (*form.asConsCellPtr())->car = first_element = *value;
     }
@@ -500,12 +566,6 @@ SExpression eval(Environment &current_environment, SExpression form)
         // Call the function with the arguments...
         return first_element.asFunction()(current_environment, rest_of_elements);
     }
-
-    // Macro?
-    // TODO
-
-    // Special form?
-    // TODO
 
     return form;
 }

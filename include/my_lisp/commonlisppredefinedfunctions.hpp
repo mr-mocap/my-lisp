@@ -145,7 +145,7 @@ SExpression second(Environment &current_environment, SExpression parameter);
 SExpression endp(Environment &current_environment, SExpression parameter);
 ///@}
 
-SExpression setf(Environment &current_environment, SExpression parameter);
+//SExpression setf(Environment &current_environment, SExpression parameter);
 
 /** @addtogroup PrintOperations Functions that print objects
  *  
@@ -157,6 +157,7 @@ SExpression prin1(Environment &current_environment, SExpression parameter);
 SExpression print(Environment &current_environment, SExpression parameter);
 ///@}
 
+SExpression read(Environment &current_environment, SExpression parameter);
 SExpression eval(Environment &current_environment, SExpression parameter);
 
 }

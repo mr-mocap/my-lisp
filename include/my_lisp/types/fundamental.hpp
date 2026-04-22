@@ -3,6 +3,7 @@
 #include <utility>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <variant> // For std::monostate
 #include <filesystem>
 
