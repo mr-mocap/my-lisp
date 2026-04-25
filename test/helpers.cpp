@@ -1,0 +1,6 @@
+#include "helpers.hpp"
+
+SExpression build_list() // Base case for zero arguments
+{
+    return SExpression::make_nil();
+}

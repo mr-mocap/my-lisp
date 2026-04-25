@@ -2,6 +2,7 @@
 
 #include <my_lisp/types/fundamental.hpp>
 #include <my_lisp/types/symbol.hpp>
+#include <my_lisp/types/stream.hpp>
 #include <my_lisp/concepts.hpp>
 
 
@@ -18,7 +19,9 @@ public:
                                     FundamentalType::Char,
                                     FundamentalType::Function,
                                     FundamentalType::PackagePtr,
-                                    FundamentalType::ConsCellPtr>;
+                                    FundamentalType::ConsCellPtr,
+                                    FundamentalType::StreamPtr
+    >;
 
     // NOTE: The order of the types in this variant is important,
     // as the type() function relies on the index of the variant to determine
@@ -35,12 +38,19 @@ public:
         Char,
         Function,
         Package,
-        ConsCell
+        ConsCell,
+        Stream,
     };
 
     constexpr Variant() noexcept = default;
     constexpr Variant(const Variant &other) = default;
     constexpr Variant(Variant &&other) noexcept = default;
+
+    constexpr Variant(bool truth) noexcept
+        :
+        Variant( truth ? Variant{ FundamentalType::True{} } : Variant{ FundamentalType::Nil{} } )
+    {
+    }
 
     // This is a "sink parameter", which allows us to avoid unnecessary copies when constructing Variants.
     template <Concepts::VariantLike T>
@@ -53,6 +63,14 @@ public:
     constexpr Variant(FundamentalType::StringView parameter) noexcept
         :
         _value( FundamentalType::String(parameter) )
+    {
+    }
+
+    // Initialize with something like Variant( u8"Some String" )
+    template <std::size_t ArrayExtent>
+    constexpr Variant(const char8_t (&arr)[ArrayExtent])
+        :
+        _value(arr)
     {
     }
 
@@ -69,6 +87,15 @@ public:
     constexpr Variant &operator =(FundamentalType::StringView parameter)
     {
         _value = FundamentalType::String(parameter);
+        return *this;
+    }
+
+    constexpr Variant &operator =(bool parameter)
+    {
+        if ( parameter )
+            _value = FundamentalType::True{};
+        else
+            _value = FundamentalType::Nil{};
         return *this;
     }
 
@@ -284,9 +311,34 @@ public:
         return std::get_if<FundamentalType::ConsCellPtr>(&_value);
     }
 
+    FundamentalType::StreamPtr asStream()
+    {
+        return std::get<FundamentalType::StreamPtr>(_value);
+    }
+
+    const FundamentalType::StreamPtr asStream() const
+    {
+        return std::get<FundamentalType::StreamPtr>(_value);
+    }
+
+    const FundamentalType::StreamPtr *asStreamPtr() const
+    {
+        return std::get_if<FundamentalType::StreamPtr>(&_value);
+    }
+
+    FundamentalType::StreamPtr *asStreamPtr()
+    {
+        return std::get_if<FundamentalType::StreamPtr>(&_value);
+    }
+
     constexpr const value_type &rawValue() const
     {
         return _value;
+    }
+
+    constexpr operator bool() const
+    {
+        return type() != Nil;
     }
 
     void visit(auto &&visitor) const

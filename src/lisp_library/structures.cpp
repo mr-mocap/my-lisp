@@ -82,6 +82,11 @@ void print(const SExpression &expr, const Environment &environment, std::ostream
             }
         }
 
+        void operator()(FundamentalType::StreamPtr /*stream*/) const
+        {
+            assert(false); // not implemented
+        }
+
         std::ostream &output;
         const Environment &env;
         int iteration = 0;

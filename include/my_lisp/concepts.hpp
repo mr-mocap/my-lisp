@@ -2,6 +2,7 @@
 
 #include <my_lisp/types/fundamental.hpp>
 #include <my_lisp/types/symbol.hpp>
+#include <my_lisp/types/stream.hpp>
 #include <my_lisp/sexpression.hpp>
 
 
@@ -39,12 +40,18 @@ template <typename T>
 concept PackageLike = std::same_as<T, FundamentalType::PackagePtr>;
 
 template <typename T>
+concept StreamLike = std::same_as<T, FundamentalType::StreamPtr>;
+
+template <typename T>
 concept ConsCellLike = std::same_as<T, FundamentalType::ConsCellPtr>;
+
+template <typename T>
+concept BoolLike = std::same_as<T, bool>;
 
 template <typename T>
 concept VariantLike = NilLike<T>     || TrueLike<T>        || StringLike<T> || PathnameLike<T> || SymbolLike<T> ||
                       NumberLike<T>  || FixedNumberLike<T> || CharLike<T>   || FunctionLike<T> ||
-                      PackageLike<T> || ConsCellLike<T>;
+                      PackageLike<T> || StreamLike<T>      || ConsCellLike<T> || BoolLike<T>;
 
 template <typename T>
 concept SExpressionLike = std::same_as<std::remove_cvref_t<T>, SExpression>;

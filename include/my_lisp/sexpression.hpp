@@ -20,6 +20,20 @@ struct SExpression
     {
     }
 
+    // Initialize with something like SExpression( u8"Some String" )
+    template <std::size_t ArrayExtent>
+    SExpression(const char8_t (&arr)[ArrayExtent])
+        :
+        _value( std::make_shared<Variant>( FundamentalType::String(arr) ) )
+    {
+    }
+
+    //explicit SExpression(bool truth_value)
+    //    :
+    //    _value( std::make_shared<Variant>(truth_value) )
+    //{
+    //}
+
     SExpression(const Variant &variant)
         :
         _value( std::make_shared<Variant>( variant ) )
@@ -223,7 +237,7 @@ struct SExpression
         return _value->asChar();
     }
 
-    constexpr const FundamentalType::Char *asChar() const
+    constexpr const FundamentalType::Char *asCharPtr() const
     {
         return _value->asCharPtr();
     }
@@ -266,6 +280,26 @@ struct SExpression
     FundamentalType::PackagePtr *asPackagePtr()
     {
         return _value->asPackagePtr();
+    }
+
+    FundamentalType::StreamPtr asStream()
+    {
+        return _value->asStream();
+    }
+
+    const FundamentalType::StreamPtr asStream() const
+    {
+        return _value->asStream();
+    }
+
+    const FundamentalType::StreamPtr *asStreamPtr() const
+    {
+        return _value->asStreamPtr();
+    }
+
+    FundamentalType::StreamPtr *asStreamPtr()
+    {
+        return _value->asStreamPtr();
     }
 
     FundamentalType::ConsCellPtr asConsCell()

@@ -2,67 +2,121 @@
 #include <my_lisp/environment.hpp>
 #include <my_lisp/contract_helpers.hpp>
 #include <my_lisp/reader.hpp>
-#include <algorithm>
-#include <array>
+#include <my_lisp/basic_c_functions.hpp>
 #include <print>
 
-
-static const std::array<FundamentalType::StringView, 25> SpecialOperatorNames{
-    u8"block",
-    u8"catch",
-    u8"eval-when",
-    u8"flet",
-    u8"function",
-    u8"go",
-    u8"if",
-    u8"labels",
-    u8"let",
-    u8"let*",
-    u8"load-time-value",
-    u8"locally",
-    u8"macrolet",
-    u8"multiple-value-call",
-    u8"multiple-value-prog1",
-    u8"progn",
-    u8"progv",
-    u8"quote",
-    u8"return-from",
-    u8"setq",
-    u8"symbol-macrolet",
-    u8"tagbody",
-    u8"the",
-    u8"throw",
-    u8"unwind-protect"
-};
+// Change this to 1 when I get the checking working correctly
+#define CHECK_PARAMETER_COUNT 0
 
 namespace
 {
 
-SExpression ExtractParameter(SExpression parameter)
+SExpression PredicateFunctionWrapper(const SExpression &parameter, basic_c_functions::PredicateFunction func)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return (*parameter.asConsCellPtr())->car;
+    if ( !basic_c_functions::listp(parameter) )
+        return false; // ERROR
 
-    return parameter;
-}
+#if CHECK_PARAMETER_COUNT
+    int length = basic_c_functions::list_length( parameter );
 
-bool IsSpecialOperator(Environment &current_environment, SExpression parameter)
-{
-    if ( parameter.type() == Variant::Type::Symbol )
+    if ( length != 1 )
     {
-        FundamentalType::StringView symbol_name = current_environment.symbol_name( parameter.asSymbol() );
-
-        if ( symbol_name.empty() )
-            return false;
-
-        return std::ranges::contains( SpecialOperatorNames, symbol_name );
+        // ERROR
+        return false;
     }
-    return false;
+#endif
+    return func( basic_c_functions::first(parameter) );
 }
 
-bool IsMacro(Environment &, SExpression )
+SExpression EqualityFunctionWrapper(const SExpression &parameter, basic_c_functions::EqualityFunction func)
 {
-    return false;
+    if ( !basic_c_functions::listp(parameter) )
+        return false; // ERROR
+
+#if CHECK_PARAMETER_COUNT
+    int length = basic_c_functions::list_length( parameter );
+
+    if ( length != 1 )
+    {
+        // ERROR
+        return false;
+    }
+#endif
+    return func( basic_c_functions::first(parameter), basic_c_functions::second(parameter) );
+}
+
+SExpression UnaryTransformationFunctionWrapper(const SExpression &parameter, basic_c_functions::UnaryTransformationFunction func)
+{
+    if ( !basic_c_functions::listp(parameter) )
+        return false; // ERROR
+
+#if CHECK_PARAMETER_COUNT
+    int length = basic_c_functions::list_length( parameter );
+
+    if ( length != 1 )
+    {
+        // ERROR
+        return false;
+    }
+#endif
+    SExpression first_parameter = basic_c_functions::first(parameter);
+
+    return func( first_parameter );
+}
+
+SExpression UnaryTransformationListFunctionWrapper(const SExpression &parameter, basic_c_functions::UnaryTransformationFunction func)
+{
+    if ( !basic_c_functions::listp(parameter) )
+        return false; // ERROR
+
+#if CHECK_PARAMETER_COUNT
+    int length = basic_c_functions::list_length( parameter );
+
+    if ( length != 1 )
+    {
+        // ERROR
+        return false;
+    }
+#endif
+    // We already know that parameter is a list, so we can just pass it directly
+    return func( parameter );
+}
+
+SExpression UnaryTransformationInEnvironmentFunctionWrapper(Environment       &environment,
+                                                            const SExpression &parameter,
+                                                            basic_c_functions::UnaryTransformationInEnvironmentFunction func)
+{
+    if ( !basic_c_functions::listp(parameter) )
+        return false; // ERROR
+
+#if CHECK_PARAMETER_COUNT
+    int length = basic_c_functions::list_length( parameter );
+
+    if ( length != 1 )
+    {
+        // ERROR
+        return false;
+    }
+#endif
+    return func( environment, basic_c_functions::first(parameter) );
+}
+
+SExpression BinaryTransformationFunctionWrapper(const SExpression &parameter,
+                                                basic_c_functions::BinaryTransformationFunction func)
+{
+    if ( !basic_c_functions::listp(parameter) )
+        return false; // ERROR
+
+#if CHECK_PARAMETER_COUNT
+    int length = basic_c_functions::list_length( parameter );
+
+    if ( length != 2 )
+    {
+        // ERROR
+        return false;
+    }
+#endif
+    return func( basic_c_functions::first(parameter), basic_c_functions::second(parameter) );
 }
 
 }
@@ -73,187 +127,102 @@ namespace PredefinedFunctions
 SExpression null(Environment &, SExpression parameter)
 {
     // Returns true if parameter is an empty list, false (NIL) otherwise.
-    if ( parameter.type() == Variant::Type::Nil )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::null );
 }
 
 SExpression symbolp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::Symbol )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::symbolp );
 }
 
 SExpression atom(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return SExpression::make_nil();
-    return SExpression::make_true();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::atom );
 }
 
 SExpression consp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::consp );
 }
 
-SExpression listp(Environment &current_environment, SExpression parameter)
+SExpression listp(Environment &, SExpression parameter)
 {
-    if ( consp(current_environment, parameter) )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::listp );
 }
 
 SExpression numberp(Environment &, SExpression parameter)
 {
-    Variant::Type parameter_type = parameter.type();
-
-    if ( (parameter_type == Variant::Type::Number) || (parameter_type == Variant::Type::FixedNumber) )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::numberp );
 }
 
 SExpression integerp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::FixedNumber )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::integerp );
 }
 
-SExpression rationalp(Environment &, SExpression)
+SExpression rationalp(Environment &, SExpression parameter)
 {
-    // TODO: IMPLEMENT ME
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::rationalp );
 }
 
 SExpression floatp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::Number )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::floatp );
 }
 
-SExpression realp(Environment &, SExpression)
+SExpression realp(Environment &, SExpression parameter)
 {
-    // TODO: IMPLEMENT ME
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::realp );
 }
 
-SExpression complexp(Environment &, SExpression)
+SExpression complexp(Environment &, SExpression parameter)
 {
-    // TODO: IMPLEMENT ME
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::complexp );
 }
 
 SExpression characterp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::Char )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::characterp );
 }
 
 SExpression stringp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::String )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::stringp );
 }
 
 SExpression functionp(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::Function )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::functionp );
 }
 
 SExpression packagep(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::Package )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::packagep );
 }
 
-SExpression eq(Environment &current_environment, SExpression parameter)
+SExpression eq(Environment &, SExpression parameter)
 {
-    // Are these the same, identical object in memory?
-    if ( listp(current_environment, parameter) )
-    {
-        SExpression first_parameter  = first(current_environment, parameter);
-        SExpression second_parameter = second(current_environment, parameter);
-
-        if ( first_parameter == second_parameter )
-            return SExpression::make_true();
-    }
-    return SExpression::make_nil();
+    return EqualityFunctionWrapper( parameter, basic_c_functions::eq );
 }
 
-SExpression eql(Environment &current_environment, SExpression parameter)
+SExpression eql(Environment &, SExpression parameter)
 {
-    // Return true if:
-    // 1. They are the same object in memory (eq)
-    // 2. They are numbers of the same type and value
-    // 3. They are characters of the same value
-
-    // 1.
-    if ( eq(current_environment, parameter) )
-        return SExpression::make_true();
-
-    SExpression first_parameter  = first(current_environment, parameter);
-    SExpression second_parameter = second(current_environment, parameter);
-    Variant::Type first_type = first_parameter.type();
-    Variant::Type second_type = second_parameter.type();
-
-    // They can't be eql if they aren't the same type, so we can return nil immediately in that case.
-    if ( first_type != second_type )
-        return SExpression::make_nil();
-
-    ASSERT(first_type == second_type, "Since the types are different, they can't be eql, so we should have returned nil already.");
-
-    // 2.
-    {
-        if ( first_type == Variant::Type::Number )
-        {
-            if ( first_parameter.asNumber() == second_parameter.asNumber() )
-                return SExpression::make_true();
-        }
-
-        if ( first_type == Variant::Type::FixedNumber )
-        {
-            if ( first_parameter.asFixedNumber() == second_parameter.asFixedNumber() )
-                return SExpression::make_true();
-        }
-    }
-
-    // 3.
-    if ( first_type == Variant::Type::Char )
-    {
-        if ( first_parameter.asChar() == second_parameter.asChar() )
-            return SExpression::make_true();
-    }
-
-    return SExpression::make_nil();
+    return EqualityFunctionWrapper( parameter, basic_c_functions::eql );
 }
 
-SExpression equal(Environment &, SExpression)
+SExpression equal(Environment &, SExpression parameter)
 {
-    // TODO: IMPLEMENT ME
-    // This compares the structural contents of the objects
-    return SExpression::make_nil();
+    return EqualityFunctionWrapper( parameter, basic_c_functions::equal );
 }
 
-SExpression equalp(Environment &, SExpression)
+SExpression equalp(Environment &, SExpression parameter)
 {
-    // TODO: IMPLEMENT ME
-    return SExpression::make_nil();
+    return EqualityFunctionWrapper( parameter, basic_c_functions::equalp );
 }
 
 SExpression logical_not(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::Nil )
-        return SExpression::make_true();
-    return SExpression::make_nil();
+    return PredicateFunctionWrapper( parameter, basic_c_functions::logical_not );
 }
 
 SExpression pathname(Environment &current_environment, SExpression parameter)
@@ -292,87 +261,94 @@ SExpression pathname(Environment &current_environment, SExpression parameter)
 //SExpression enough_namestring(Environment &current_environment, SExpression parameter);
 //SExpression user_homedir_pathname(Environment &current_environment, SExpression parameter);
 
-SExpression cons(Environment &current_environment, SExpression parameter)
+SExpression cons(Environment &, SExpression parameter)
 {
-    if ( listp(current_environment, parameter) )
-    {
-        SExpression first_parameter  = first(current_environment, parameter);
-        SExpression second_parameter = second( current_environment, parameter );
-
-        return SExpression::make_cons(first_parameter, second_parameter);
-    }
-    return SExpression::make_nil();
+    return BinaryTransformationFunctionWrapper( parameter, basic_c_functions::cons );
 }
 
 SExpression car(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return parameter.asConsCell()->car;
-    return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::car );
 }
 
 SExpression cdr(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return parameter.asConsCell()->cdr;
-    return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::cdr );
 }
 
-SExpression caar(Environment &current_environment, SExpression parameter)
+SExpression caar(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return car(current_environment, parameter.asConsCell()->car);
-    return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::caar );
 }
 
-SExpression cadr(Environment &current_environment, SExpression parameter)
+SExpression cadr(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return cdr(current_environment, parameter.asConsCell()->car);
-    return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::cadr );
 }
 
-SExpression cdar(Environment &current_environment, SExpression parameter)
+SExpression cdar(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return car(current_environment, parameter.asConsCell()->cdr);
-    return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::cdar );
 }
 
-SExpression cddr(Environment &current_environment, SExpression parameter)
+SExpression cddr(Environment &, SExpression parameter)
 {
-    if ( parameter.type() == Variant::Type::ConsCell )
-        return cdr(current_environment, parameter.asConsCell()->cdr);
-    return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::cddr );
 }
 
-SExpression first(Environment &current_environment, SExpression parameter)
+SExpression first(Environment &, SExpression parameter)
 {
-    return car(current_environment, parameter );
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::first );
 }
 
-SExpression rest(Environment &current_environment, SExpression parameter)
+SExpression rest(Environment &, SExpression parameter)
 {
-    if ( listp(current_environment, parameter) )
-        return cdr(current_environment, parameter);
-    return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::rest );
 }
 
-SExpression second(Environment &current_environment, SExpression parameter)
+SExpression second(Environment &, SExpression parameter)
 {
-    return first( current_environment, rest(current_environment, parameter) );
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::second );
 }
 
-SExpression endp(Environment &current_environment, SExpression parameter)
+SExpression third(Environment &, SExpression parameter)
 {
-    if ( null(current_environment, parameter) )
-        return SExpression::make_true();
-    if ( cons(current_environment, parameter) )
-        return SExpression::make_nil();
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::third );
+}
 
-    // Error for anything else
-    // TODO: Handle the error
-    return SExpression::make_nil();
+SExpression fourth(Environment &, SExpression parameter)
+{
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::fourth );
+}
+
+SExpression fifth(Environment &, SExpression parameter)
+{
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::fifth );
+}
+
+SExpression sixth(Environment &, SExpression parameter)
+{
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::sixth );
+}
+
+SExpression seventh(Environment &, SExpression parameter)
+{
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::seventh );
+}
+
+SExpression eighth(Environment &, SExpression parameter)
+{
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::eighth );
+}
+
+SExpression ninth(Environment &, SExpression parameter)
+{
+    return UnaryTransformationListFunctionWrapper( parameter, basic_c_functions::ninth );
+}
+
+SExpression endp(Environment &, SExpression parameter)
+{
+    return PredicateFunctionWrapper( parameter, basic_c_functions::endp );
 }
 
 //SExpression setf(Environment &, SExpression )
@@ -399,98 +375,16 @@ SExpression endp(Environment &current_environment, SExpression parameter)
 
 SExpression prin1(Environment &current_environment, SExpression parameter)
 {
-    struct Visitor {
-        explicit Visitor(std::ostream &out, const Environment &e) : output(out), env(e) {}
-        explicit Visitor(std::ostream &out, const Environment &e, int i) : output(out), env(e), iteration(i) {}
-
-        void operator()(FundamentalType::Nil) const
-        {
-            std::print(output, "NIL");
-        }
-        void operator()(FundamentalType::True) const
-        {
-            std::print(output, "T");
-        }
-        void operator()(const FundamentalType::String &s) const
-        {
-            std::print(output, "\"{}\"", text_io::to_string_view(s));
-        }
-        void operator()(const FundamentalType::Pathname &p) const
-        {
-            std::print(output, "\"{}\"", text_io::to_string_view(p.u8string()));
-        }
-        void operator()(FundamentalType::Symbol s) const
-        {
-            FundamentalType::StringView sym_name( env.symbol_name(s) );
-
-            std::print(output, "{}", (sym_name.empty()) ? "NIL" : text_io::to_string_view(sym_name));
-        }
-        void operator()(FundamentalType::Number d) const
-        {
-            std::print(output, "{}", d);
-        }
-        void operator()(FundamentalType::FixedNumber fixednum) const
-        {
-            std::print(output, "{}", fixednum);
-        }
-        void operator()(FundamentalType::Char c) const
-        {
-            // naive conversion of codepoint to utf-8 bytes is not implemented;
-            // print as numeric value for now
-            if ( c <= 0x7F )
-                std::print(output, "{}", static_cast<char>(c));
-            else
-                std::print(output, "Printing characters outside of ASCII range not implemented yet");
-        }
-        void operator()(FundamentalType::Function) const
-        {
-            std::print(output, "FunctionPtr");
-        }
-        void operator()(FundamentalType::PackagePtr) const
-        {
-            std::print(output, "Package");
-        }
-        void operator()(FundamentalType::ConsCellPtr cons) const
-        {
-            if ( cons->isEndList() )
-            {
-                cons->car.visit( Visitor( output, env ) );
-                std::print(output, ")");
-            }
-            else if ( cons->isList() )
-            {
-                if ( iteration == 0 )
-                    std::print(output, "(");
-
-                cons->car.visit( Visitor( output, env ) );
-                std::print(output, " ");
-                cons->cdr.visit( Visitor( output, env, iteration + 1 ) );
-            }
-            else if ( cons->isDottedPair() )
-            {
-                std::print(output, "(");
-                cons->car.visit( Visitor( output, env ) );
-                std::print(output, " . ");
-                cons->cdr.visit( Visitor( output, env ) );
-                std::print(output, ")");
-            }
-        }
-
-        std::ostream &output;
-        const Environment &env;
-        int iteration = 0;
-    };
-
-    parameter.visit( Visitor( std::cout, current_environment ) );
-    return parameter;
+    return UnaryTransformationInEnvironmentFunctionWrapper(current_environment,
+                                                           parameter,
+                                                           basic_c_functions::prin1);
 }
 
 SExpression print(Environment &current_environment, SExpression parameter)
 {
-    std::print( std::cout, "\n" );
-    prin1( current_environment, parameter );
-    std::print( std::cout, " " );
-    return parameter;
+    return UnaryTransformationInEnvironmentFunctionWrapper(current_environment,
+                                                           parameter,
+                                                           basic_c_functions::print);
 }
 
 SExpression read(Environment &current_environment, SExpression )
@@ -514,60 +408,29 @@ SExpression read(Environment &current_environment, SExpression )
 
 SExpression eval(Environment &current_environment, SExpression form)
 {
-    if ( atom(current_environment, form) )
-    {
-        // Everything BUT a Symbol is self-evaluating...
-        if ( form.selfEvaluating() )
-            return form;
-
-        ASSERT(form.type() == Variant::Type::Symbol, "Assert Failed: form is not a Symbol");
-
-        if ( SExpression *value = current_environment.find_symbol_value(*form.asSymbolPtr()) )
-            return *value;
-
-        // ERROR: Symbol not found in environment, return nil for now (TODO: Handle this better, maybe throw an error or something)
-
-        return SExpression::make_nil();
-    }
-
-    ASSERT( listp(current_environment, form), "Assert Failed: form is not a list");
-
-    // eval() the list element by element
-    SExpression first_element = first(current_environment, form);
-
-    // Let's go ahead and just resolve the first element.  CommonLisp spec requires that the first element NOT
-    // be evaluated if it's a symbol that names a special form or macro, but we can handle that later
-    // when we implement special forms and macros.  For now, we'll just resolve the first element if it's
-    // a symbol, and then we'll handle function application if it turns out to be a function.
-    if ( first_element.type() == Variant::Type::Symbol )
-    {
-        // Is this a special form?
-        if ( IsSpecialOperator(current_environment, first_element) )
-        {
-            // TODO: Implement Me!
-        }
-        else if ( IsMacro(current_environment, first_element) )
-        {
-            // TODO: Implement Macro Expansion
-        }
-
-        if (SExpression *value = current_environment.find_symbol_value( *first_element.asSymbolPtr() ) )
-            (*form.asConsCellPtr())->car = first_element = *value;
-    }
-
-    // Handle function application if the first element evaluates to a function
-    if ( first_element.type() == Variant::Type::Function )
-    {
-        // First, evaluate the remaining elements of the list from left to right...
-        SExpression rest_of_elements = rest(current_environment, form);
-
-        rest_of_elements = eval(current_environment, rest_of_elements);
-
-        // Call the function with the arguments...
-        return first_element.asFunction()(current_environment, rest_of_elements);
-    }
-
-    return form;
+    return basic_c_functions::eval(current_environment, form);
 }
+
+//SExpression eval_list(Environment &current_environment, SExpression parameter)
+//{
+//#if 0
+//(defun eval-list (args)
+//    (if (null args)
+//        nil
+//        (cons (eval (car args))
+//            (eval-list(cdr args)))
+//)
+//#endif
+//    if ( null(current_environment, parameter) )
+//        return SExpression::make_nil();
+//    else
+//    {
+//        SExpression car_parameter = first(current_environment, parameter);
+//        SExpression cdr_parameter = rest(current_environment, parameter);
+//
+//        return SExpression::make_cons( eval(current_environment, car_parameter),
+//                                       eval_list(current_environment, cdr_parameter));
+//    }
+//}
 
 }
