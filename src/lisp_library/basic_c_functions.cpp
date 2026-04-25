@@ -143,7 +143,7 @@ SExpression prin1(Environment &current_environment, const SExpression &parameter
         {
             if ( cons->isEndList() )
             {
-                cons->car.visit( Visitor( output, env ) );
+                cons->car.visit( Visitor( output, env, iteration ) );
                 std::print(output, ")");
             }
             else if ( cons->isList() )
@@ -151,7 +151,7 @@ SExpression prin1(Environment &current_environment, const SExpression &parameter
                 if ( iteration == 0 )
                     std::print(output, "(");
 
-                cons->car.visit( Visitor( output, env ) );
+                cons->car.visit( Visitor( output, env, iteration ) );
                 std::print(output, " ");
                 cons->cdr.visit( Visitor( output, env, iteration + 1 ) );
             }
@@ -238,7 +238,7 @@ SExpression eval(Environment &current_environment, const SExpression &form)
             return cons( retval, nil() );
         }
 
-        return nil(); // TODO: Handle this case
+        return span_to_list( SExpressionSpan(forms) );
     }
 }
 

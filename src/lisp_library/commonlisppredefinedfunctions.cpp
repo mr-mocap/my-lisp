@@ -351,40 +351,16 @@ SExpression endp(Environment &, SExpression parameter)
     return PredicateFunctionWrapper( parameter, basic_c_functions::endp );
 }
 
-//SExpression setf(Environment &, SExpression )
-//{
-//#if 0
-//    if ( listp(current_environment, parameter) )
-//    {
-//        // TODO: Support pairs of values to set, like (setf a 1 b 2 c 3)
-//        SExpression first_parameter  = first(current_environment, parameter);
-//        SExpression second_parameter = first(current_environment, rest(current_environment, parameter) );
-//
-//        if ( first_parameter.type() == Variant::Type::Symbol )
-//        {
-//            if ( SExpression *symbol_value = current_environment.find_symbol_value(first_parameter.asSymbol()) )
-//            {
-//                *symbol_value = second_parameter;
-//                return second_parameter;
-//            }
-//        }
-//    }
-//#endif
-//    return SExpression::make_nil();
-//}
-
 SExpression prin1(Environment &current_environment, SExpression parameter)
 {
-    return UnaryTransformationInEnvironmentFunctionWrapper(current_environment,
-                                                           parameter,
-                                                           basic_c_functions::prin1);
+    // We just call the underlying function directly, since it already expects a list OR atom
+    return basic_c_functions::prin1(current_environment, parameter);
 }
 
 SExpression print(Environment &current_environment, SExpression parameter)
 {
-    return UnaryTransformationInEnvironmentFunctionWrapper(current_environment,
-                                                           parameter,
-                                                           basic_c_functions::print);
+    // We just call the underlying function directly, since it already expects a list OR atom
+    return basic_c_functions::print(current_environment, parameter);
 }
 
 SExpression read(Environment &current_environment, SExpression )
