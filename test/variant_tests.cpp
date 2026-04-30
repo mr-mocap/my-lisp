@@ -699,3 +699,35 @@ TEST_CASE("Assignment", "[Variant]")
     }
 }
 
+TEST_CASE("Copy Constructor", "[Variant]")
+{
+    SECTION("from String")
+    {
+        Variant v1(u8"test string");
+        Variant v2(v1);
+
+        REQUIRE(v1.type() == Variant::Type::String);
+        REQUIRE(v1.asString() == FundamentalType::String(u8"test string"));
+        REQUIRE(v2.type() == Variant::Type::String);
+        REQUIRE(v2.asString() == FundamentalType::String(u8"test string"));
+    }
+}
+
+TEST_CASE("Move Constructor", "[Variant]")
+{
+    SECTION("from double")
+    {
+        Variant v( Variant(42.8) );
+
+        REQUIRE( v.type() == Variant::Type::Number );
+        REQUIRE( v.asNumber() == FundamentalType::Number(42.8) );
+    }
+
+    SECTION("from String")
+    {
+        Variant v( Variant(u8"test string") );
+
+        REQUIRE( v.type() == Variant::Type::String );
+        REQUIRE( v.asString() == u8"test string" );
+    }
+}
