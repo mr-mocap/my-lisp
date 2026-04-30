@@ -308,3 +308,394 @@ TEST_CASE("Constructors", "[Variant]")
     }
 }
 
+TEST_CASE("Assignment", "[Variant]")
+{
+    SECTION("NIL")
+    {
+        Variant v( FundamentalType::Nil{} );
+
+        REQUIRE( v.type() == Variant::Type::Nil );
+
+        v = FundamentalType::Nil{};
+
+        REQUIRE( v.type() == Variant::Type::Nil );
+    }
+
+    SECTION("True")
+    {
+        Variant v;
+
+        REQUIRE( v.type() == Variant::Type::Nil );
+
+        v = FundamentalType::True{};
+        
+        REQUIRE( v.type() == Variant::Type::True );
+    }
+
+    SECTION("String")
+    {
+        SECTION("with hard-coded string (StringArrayLike)")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = u8"test string";
+
+            REQUIRE( v.type() == Variant::Type::String );
+            REQUIRE( v.asString() == u8"test string" );
+        }
+
+        SECTION("with l-value StringView")
+        {
+            FundamentalType::StringView str_view(u8"test string");
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = str_view;
+
+            REQUIRE( v.type() == Variant::Type::String );
+            REQUIRE( v.asString() == u8"test string" );
+        }
+
+        SECTION("with r-value String")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::String(u8"test string");
+
+            REQUIRE( v.type() == Variant::Type::String );
+            REQUIRE( v.asString() == u8"test string" );
+        }
+
+        SECTION("with r-value StringView")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::StringView(u8"test string");
+
+            REQUIRE( v.type() == Variant::Type::String );
+            REQUIRE( v.asString() == u8"test string" );
+        }
+    }
+
+    SECTION("as Pathname")
+    {
+        SECTION("with l-value")
+        {
+            FundamentalType::Pathname path("a/b");
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = path;
+
+            REQUIRE( v.type() == Variant::Type::Pathname );
+            REQUIRE( v.asPathname() == path );
+        }
+
+        SECTION("with r-value")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::Pathname("a/b");
+
+            REQUIRE( v.type() == Variant::Type::Pathname );
+            REQUIRE( v.asPathname() == FundamentalType::Pathname("a/b") );
+        }
+    }
+
+    SECTION("as Symbol")
+    {
+        SECTION(" with l-value")
+        {
+            FundamentalType::Symbol s{ .value = 3, .home_package = u8"COMMON-LISP" };
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = s;
+
+            REQUIRE( v.type() == Variant::Type::Symbol );
+            REQUIRE( v.asSymbol().value == 3 );
+            REQUIRE( v.asSymbol().home_package == u8"COMMON-LISP" );
+        }
+
+        SECTION("with r-value")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::Symbol{ .value = 4, .home_package = u8"BLAH" };
+
+            REQUIRE( v.type() == Variant::Type::Symbol );
+            REQUIRE( v.asSymbol().value == 4 );
+            REQUIRE( v.asSymbol().home_package == u8"BLAH" );
+        }
+    }
+
+    SECTION("as Number")
+    {
+        SECTION("with l-value")
+        {
+            FundamentalType::Number n = 42.4;
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = n;
+
+            REQUIRE( v.type() == Variant::Type::Number );
+            REQUIRE( v.asNumber() == FundamentalType::Number(42.4) );
+        }
+
+        SECTION("with r-value")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::Number(42.8);
+
+            REQUIRE( v.type() == Variant::Type::Number );
+            REQUIRE( v.asNumber() == FundamentalType::Number(42.8) );
+        }
+
+        SECTION("with double")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = 42.8;
+
+            REQUIRE( v.type() == Variant::Type::Number );
+            REQUIRE( v.asNumber() == FundamentalType::Number(42.8) );
+        }
+    }
+
+    SECTION("as FixedNumber")
+    {
+        SECTION("with l-value")
+        {
+            FundamentalType::FixedNumber n = 42;
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = n;
+
+            REQUIRE( v.type() == Variant::Type::FixedNumber );
+            REQUIRE( v.asFixedNumber() == FundamentalType::FixedNumber(42) );
+        }
+
+        SECTION("with r-value")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::FixedNumber(42);
+
+            REQUIRE( v.type() == Variant::Type::FixedNumber );
+            REQUIRE( v.asFixedNumber() == FundamentalType::FixedNumber(42) );
+        }
+    }
+
+    SECTION("as Char")
+    {
+        SECTION("with l-value")
+        {
+            FundamentalType::Char c = 'Q';
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = c;
+
+            REQUIRE( v.type() == Variant::Type::Char );
+            REQUIRE( v.asChar() == FundamentalType::Char('Q'));
+        }
+
+        SECTION("with r-value")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::Char('$');
+
+            REQUIRE( v.type() == Variant::Type::Char );
+            REQUIRE( v.asChar() == FundamentalType::Char('$'));
+        }
+
+        SECTION("with u8 char")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = u8'+';
+
+            REQUIRE( v.type() == Variant::Type::Char );
+            REQUIRE( v.asChar() == FundamentalType::Char( u8'+' ));
+        }
+
+        SECTION("with U char")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = U'猫';
+
+            REQUIRE( v.type() == Variant::Type::Char );
+            REQUIRE( v.asChar() == FundamentalType::Char( U'猫' ));
+        }
+    }
+
+    SECTION("as Function")
+    {
+        SECTION("with l-value")
+        {
+            FundamentalType::Function f = &PredefinedFunctions::atom;
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = f;
+
+            REQUIRE( v.type() == Variant::Type::Function );
+            REQUIRE( v.asFunction() == &PredefinedFunctions::atom );
+        }
+
+        SECTION("with r-value")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = FundamentalType::Function( &PredefinedFunctions::null );
+
+            REQUIRE( v.type() == Variant::Type::Function );
+            REQUIRE( v.asFunction() == FundamentalType::Function( &PredefinedFunctions::null ) );
+        }
+
+        SECTION("with function pointer")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = &PredefinedFunctions::null;
+
+            REQUIRE( v.type() == Variant::Type::Function );
+            REQUIRE( v.asFunction() == FundamentalType::Function( &PredefinedFunctions::null ) );
+        }
+    }
+
+    SECTION("as Package")
+    {
+        SECTION("with l-value")
+        {
+            FundamentalType::PackagePtr p = std::make_shared<Package>( u8"HOME-PACKAGE" );
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = p;
+
+            REQUIRE( v.type() == Variant::Type::Package );
+            REQUIRE( v.asPackage()->name() == u8"HOME-PACKAGE" );
+        }
+
+        SECTION("with r-value")
+        {
+            Variant v;
+
+            REQUIRE( v.type() == Variant::Type::Nil );
+
+            v = std::make_shared<Package>(u8"HOME-PACKAGE");
+
+            REQUIRE( v.type() == Variant::Type::Package );
+            REQUIRE( v.asPackage()->name() == u8"HOME-PACKAGE" );
+        }
+    }
+
+    SECTION("as Stream")
+    {
+#if 0
+        SECTION("copy constructed with l-value")
+        {
+            FundamentalType::PackagePtr p = std::make_shared<Package>( u8"HOME-PACKAGE" );
+            Variant v( p );
+
+            REQUIRE( v.type() == Variant::Type::Package );
+            REQUIRE( v.asPackage()->name() == u8"HOME-PACKAGE" );
+        }
+#endif
+
+#if 0
+        SECTION("copy constructed with r-value")
+        {
+            Variant v( std::make_shared<Package>( u8"HOME-PACKAGE" ));
+
+            REQUIRE( v.type() == Variant::Type::Package );
+            REQUIRE( v.asPackage()->name() == u8"HOME-PACKAGE" );
+        }
+#endif
+    }
+
+#if 0
+    SECTION("As ConsCell")
+    {
+        SECTION("copy constructed with l-value")
+        {
+            FundamentalType::ConsCellPtr c = std::make_shared<ConsCell>();
+
+            c->car = 42;
+            c->cdr = FundamentalType::Nil{};
+            Variant v( c );
+
+            REQUIRE( v.type() == Variant::Type::ConsCell );
+            REQUIRE( v.asConsCell()->car.type() == Variant::Type::FixedNumber );
+            REQUIRE( v.asConsCell()->car.asFixedNumber() == 42 );
+            REQUIRE( v.asConsCell()->cdr.type() == Variant::Type::Nil );
+        }
+
+        SECTION("copy constructed with r-value")
+        {
+            Variant v( std::make_shared<ConsCell>( { .car = 42, .cdr = FundamentalType::Nil{} } ) );
+
+            REQUIRE( v.type() == Variant::Type::ConsCell );
+            REQUIRE( v.asConsCell()->car.type() == Variant::Type::FixedNumber );
+            REQUIRE( v.asConsCell()->car.asFixedNumber() == 42 );
+            REQUIRE( v.asConsCell()->cdr.type() == Variant::Type::Nil );
+        }
+    }
+#endif
+
+    SECTION("from Bool")
+    {
+        Variant v;
+
+        REQUIRE( v.type() == Variant::Type::Nil );
+
+        v = true;
+
+        REQUIRE( v.type() == Variant::Type::True );
+
+        v = false;
+
+        REQUIRE( v.type() == Variant::Type::Nil );
+    }
+}
+
