@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <my_lisp/lisp_library.hpp>
+#include "helpers.hpp"
 
 TEST_CASE("cons creates a ConsCell", "[List]")
 {
@@ -13,6 +14,14 @@ TEST_CASE("cons creates a ConsCell", "[List]")
     {
         SExpression second = SExpression::make_cons(SExpression::make_true(), SExpression::make_nil());
         SExpression first = SExpression::make_cons( SExpression::make_nil(), second );
+        SExpression stuff = build_list(SExpression{ FundamentalType::True{} }, SExpression{ FundamentalType::String{u8"test"}});
+        //SExpression stuff2= build_list(FundamentalType::True{}, FundamentalType::String{u8"test"});
+
+        REQUIRE(stuff.type() == Variant::Type::ConsCell);
+        REQUIRE(stuff.asConsCell()->car.type() == Variant::Type::True);
+        REQUIRE(stuff.asConsCell()->cdr.type() == Variant::Type::ConsCell);
+        REQUIRE(stuff.asConsCell()->cdr.asConsCell()->car.type() == Variant::Type::String);
+        REQUIRE(stuff.asConsCell()->cdr.asConsCell()->cdr.type() == Variant::Type::Nil);
 
         REQUIRE(first.type() == Variant::Type::ConsCell);
         REQUIRE(first.asConsCell()->car.type() == Variant::Type::Nil);

@@ -14,3 +14,11 @@ SExpression build_list(FirstArg first, RestArgs ... rest)
 
     return first_node;
 }
+
+SExpression build_list_from_fundamentals(); // Base case for zero arguments
+
+template <Concepts::SExpressionLike FirstArg, Concepts::SExpressionLike... RestArgs>
+SExpression build_list_from_fundamentals()
+{
+
+}

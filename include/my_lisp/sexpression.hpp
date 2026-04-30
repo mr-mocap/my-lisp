@@ -7,42 +7,21 @@ struct SExpression
 {
     constexpr SExpression() noexcept = default;
 
+#if 1
+    // Forward type-handling to the underlying Variant constructor
+    template <typename T>
+#else
     template <Concepts::VariantLike T>
-    SExpression(T parameter)
+#endif
+    SExpression(T &&parameter)
         :
         _value( std::make_shared<Variant>( std::forward<T>(parameter) ) )
     {
     }
 
-    SExpression(FundamentalType::StringView parameter)
+    SExpression(SExpression &other)
         :
-        _value( std::make_shared<Variant>( FundamentalType::String(parameter) ) )
-    {
-    }
-
-    // Initialize with something like SExpression( u8"Some String" )
-    template <std::size_t ArrayExtent>
-    SExpression(const char8_t (&arr)[ArrayExtent])
-        :
-        _value( std::make_shared<Variant>( FundamentalType::String(arr) ) )
-    {
-    }
-
-    //explicit SExpression(bool truth_value)
-    //    :
-    //    _value( std::make_shared<Variant>(truth_value) )
-    //{
-    //}
-
-    SExpression(const Variant &variant)
-        :
-        _value( std::make_shared<Variant>( variant ) )
-    {
-    }
-
-    SExpression(Variant &&variant)
-        :
-        _value( std::make_shared<Variant>( std::move(variant) ) )
+        _value( other._value )
     {
     }
 

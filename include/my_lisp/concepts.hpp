@@ -16,7 +16,26 @@ template <typename T>
 concept TrueLike = std::same_as<T, FundamentalType::True>;
 
 template <typename T>
-concept StringLike = std::same_as<T, FundamentalType::String> || std::same_as<T, FundamentalType::StringView>;
+struct IsStringArrayLike
+{
+    static constexpr bool value = false;
+};
+
+template <size_t Extent>
+struct IsStringArrayLike<const char8_t (&)[Extent]>
+{
+    static constexpr bool value = true;
+};
+
+template <typename T>
+constexpr bool is_string_array_like_v = IsStringArrayLike<T>::value;
+
+template <typename T>
+concept StringArrayLike = is_string_array_like_v<T>;
+
+template <typename T>
+concept StringLike = std::same_as<T, FundamentalType::String> || std::same_as<T, FundamentalType::StringView> ||
+                     std::same_as<T, StringArrayLike>;
 
 template <typename T>
 concept PathnameLike = std::same_as<T, FundamentalType::Pathname>;
@@ -46,7 +65,7 @@ template <typename T>
 concept ConsCellLike = std::same_as<T, FundamentalType::ConsCellPtr>;
 
 template <typename T>
-concept BoolLike = std::same_as<T, bool>;
+concept BoolLike = std::same_as<std::remove_cvref_t<T>, bool>;
 
 template <typename T>
 concept VariantLike = NilLike<T>     || TrueLike<T>        || StringLike<T> || PathnameLike<T> || SymbolLike<T> ||
@@ -54,6 +73,12 @@ concept VariantLike = NilLike<T>     || TrueLike<T>        || StringLike<T> || P
                       PackageLike<T> || StreamLike<T>      || ConsCellLike<T> || BoolLike<T>;
 
 template <typename T>
-concept SExpressionLike = std::same_as<std::remove_cvref_t<T>, SExpression>;
+concept UniversalVariantLike = VariantLike< std::remove_cvref_t<T> >;
+
+template <typename T>
+concept SExpressionLike = std::same_as<T, SExpression>;
+
+template <typename T>
+concept UniversalSExpressionLike = std::same_as<std::remove_cvref_t<T>, SExpression>;
 
 }

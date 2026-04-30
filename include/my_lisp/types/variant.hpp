@@ -46,12 +46,6 @@ public:
     constexpr Variant(const Variant &other) = default;
     constexpr Variant(Variant &&other) noexcept = default;
 
-    constexpr Variant(bool truth) noexcept
-        :
-        Variant( truth ? Variant{ FundamentalType::True{} } : Variant{ FundamentalType::Nil{} } )
-    {
-    }
-
     // This is a "sink parameter", which allows us to avoid unnecessary copies when constructing Variants.
     template <Concepts::VariantLike T>
     constexpr Variant(T parameter) noexcept
@@ -60,17 +54,19 @@ public:
     {
     }
 
-    constexpr Variant(FundamentalType::StringView parameter) noexcept
+    // NOTE: We need to make this constructor the same priority as the VariantLike constructor above, so
+    //       we templatize this instead of making it non-templated (and then make matches we don't want,
+    //       like const char * matching the bool non-templated constructor)
+    template <Concepts::BoolLike T>
+    constexpr Variant(T truth) noexcept
         :
-        _value( FundamentalType::String(parameter) )
+        Variant( truth ? Variant{ FundamentalType::True{} } : Variant{ FundamentalType::Nil{} } )
     {
     }
 
-    // Initialize with something like Variant( u8"Some String" )
-    template <std::size_t ArrayExtent>
-    constexpr Variant(const char8_t (&arr)[ArrayExtent])
+    constexpr Variant(FundamentalType::StringView parameter) noexcept
         :
-        _value(arr)
+        _value( FundamentalType::String(parameter) )
     {
     }
 
@@ -90,7 +86,8 @@ public:
         return *this;
     }
 
-    constexpr Variant &operator =(bool parameter)
+    template <Concepts::BoolLike T>
+    constexpr Variant &operator =(T parameter)
     {
         if ( parameter )
             _value = FundamentalType::True{};
