@@ -70,7 +70,7 @@ concept BoolLike = std::same_as<std::remove_cvref_t<T>, bool>;
 template <typename T>
 concept VariantLike = NilLike<T>     || TrueLike<T>        || StringLike<T> || PathnameLike<T> || SymbolLike<T> ||
                       NumberLike<T>  || FixedNumberLike<T> || CharLike<T>   || FunctionLike<T> ||
-                      PackageLike<T> || StreamLike<T>      || ConsCellLike<T> || BoolLike<T>;
+                      PackageLike<T> || StreamLike<T>      || ConsCellLike<T>;
 
 template <typename T>
 concept UniversalVariantLike = VariantLike< std::remove_cvref_t<T> >;

@@ -15,6 +15,24 @@ struct SExpression
     {
     }
 
+    SExpression(FundamentalType::StringView parameter)
+        :
+        _value( std::make_shared<Variant>( parameter ) )
+    {
+    }
+
+    SExpression(char8_t parameter)
+        :
+        _value( std::make_shared<Variant>( parameter ) )
+    {
+    }
+
+    SExpression(char32_t parameter)
+        :
+        _value( std::make_shared<Variant>( parameter ) )
+    {
+    }
+
     SExpression(SExpression &other)
         :
         _value( other._value )
@@ -60,6 +78,13 @@ struct SExpression
         return *this;
     }
 
+    SExpression &operator =(SExpression &other)
+    {
+        if ( &other != this )
+            _value = other._value;
+        return *this;
+    }
+
     SExpression &operator =(SExpression &&other) noexcept
     {
         if ( &other != this )
@@ -67,8 +92,9 @@ struct SExpression
         return *this;
     }
 
-    template <Concepts::VariantLike T>
-    SExpression &operator =(T parameter)
+    // Forward type-handling to the underlying Variant operator =()
+    template <typename T>
+    SExpression &operator =(T &&parameter)
     {
         // Reset the value to a new one
         _value = std::make_shared<Variant>( std::forward<T>(parameter) );
@@ -94,8 +120,7 @@ struct SExpression
         return *this;
     }
 
-    template <Concepts::BoolLike T>
-    SExpression &operator =(T parameter)
+    SExpression &operator =(bool parameter)
     {
         _value = std::make_shared<Variant>( parameter );
         return *this;

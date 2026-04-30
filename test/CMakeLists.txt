@@ -33,7 +33,7 @@ set_tests_properties(cli.version_matches PROPERTIES PASS_REGULAR_EXPRESSION "${P
 
 add_executable(tests tests.cpp package_tests.cpp symboltable_tests.cpp environment_tests.cpp
                packagecollection_tests.cpp tokenizer_tests.cpp parser_tests.cpp parser_edge_cases.cpp
-               pathname_tests.cpp list_tests.cpp equality_tests.cpp basic_c_function_tests.cpp helpers.cpp "variant_tests.cpp")
+               pathname_tests.cpp list_tests.cpp equality_tests.cpp basic_c_function_tests.cpp helpers.cpp "variant_tests.cpp" "sexpression_tests.cpp")
 target_link_libraries(
   tests
   PRIVATE my_lisp::my_lisp_warnings
@@ -67,7 +67,7 @@ catch_discover_tests(
   .xml)
 
 # Add a file containing a set of constexpr tests
-add_executable(conversions_tests  environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp "pathname_tests.cpp" "list_tests.cpp" "equality_tests.cpp" "basic_c_function_tests.cpp" "helpers.cpp" "variant_tests.cpp")
+add_executable(conversions_tests  environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp "pathname_tests.cpp" "list_tests.cpp" "equality_tests.cpp" "basic_c_function_tests.cpp" "helpers.cpp" "variant_tests.cpp" "sexpression_tests.cpp")
 target_link_libraries(
   conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
@@ -92,7 +92,7 @@ catch_discover_tests(
 
 # Disable the constexpr portion of the test, and build again this allows us to have an executable that we can debug when
 # things go wrong with the constexpr testing
-add_executable(relaxed_conversions_tests  environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp "pathname_tests.cpp" "list_tests.cpp" "equality_tests.cpp" "basic_c_function_tests.cpp" "helpers.cpp" "variant_tests.cpp")
+add_executable(relaxed_conversions_tests  environment_tests.cpp packagecollection_tests.cpp tokenizer_tests.cpp "pathname_tests.cpp" "list_tests.cpp" "equality_tests.cpp" "basic_c_function_tests.cpp" "helpers.cpp" "variant_tests.cpp" "sexpression_tests.cpp")
 target_link_libraries(
   relaxed_conversions_tests
   PRIVATE my_lisp::my_lisp_warnings
@@ -117,7 +117,7 @@ catch_discover_tests(
   OUTPUT_SUFFIX
   .xml)
 
-add_executable(test_parser test_parser.cpp "pathname_tests.cpp" "list_tests.cpp" "equality_tests.cpp" "basic_c_function_tests.cpp" "helpers.cpp" "variant_tests.cpp")
+add_executable(test_parser test_parser.cpp "pathname_tests.cpp" "list_tests.cpp" "equality_tests.cpp" "basic_c_function_tests.cpp" "helpers.cpp" "variant_tests.cpp" "sexpression_tests.cpp")
 target_link_libraries(
   test_parser
   PRIVATE my_lisp::my_lisp_warnings
