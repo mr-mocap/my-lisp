@@ -7,12 +7,8 @@ struct SExpression
 {
     constexpr SExpression() noexcept = default;
 
-#if 1
     // Forward type-handling to the underlying Variant constructor
     template <typename T>
-#else
-    template <Concepts::VariantLike T>
-#endif
     SExpression(T &&parameter)
         :
         _value( std::make_shared<Variant>( std::forward<T>(parameter) ) )
@@ -83,6 +79,25 @@ struct SExpression
     {
         // Reset the value to a new one
         _value = std::make_shared<Variant>( FundamentalType::String(parameter) );
+        return *this;
+    }
+
+    SExpression &operator =(char8_t parameter)
+    {
+        _value = std::make_shared<Variant>( parameter );
+        return *this;
+    }
+
+    SExpression &operator =(char32_t parameter)
+    {
+        _value = std::make_shared<Variant>( parameter );
+        return *this;
+    }
+
+    template <Concepts::BoolLike T>
+    SExpression &operator =(T parameter)
+    {
+        _value = std::make_shared<Variant>( parameter );
         return *this;
     }
 
