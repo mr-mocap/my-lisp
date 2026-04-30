@@ -188,15 +188,21 @@ TEST_CASE("Constructors", "[Variant]")
             REQUIRE( v.asChar() == FundamentalType::Char('$'));
         }
 
-#if 0
-        SECTION("copy constructed with char")
+        SECTION("copy constructed with u8 char")
         {
-            Variant v( '+' );
+            Variant v( u8'+' );
 
             REQUIRE( v.type() == Variant::Type::Char );
-            REQUIRE( v.asChar() == FundamentalType::Char('+'));
+            REQUIRE( v.asChar() == FundamentalType::Char( u8'+' ));
         }
-#endif
+
+        SECTION("copy constructed with U char")
+        {
+            Variant v( U'猫' );
+
+            REQUIRE( v.type() == Variant::Type::Char );
+            REQUIRE( v.asChar() == FundamentalType::Char( U'猫' ));
+        }
     }
 
     SECTION("as Function")
@@ -291,5 +297,14 @@ TEST_CASE("Constructors", "[Variant]")
         }
     }
 #endif
+
+    SECTION("from Bool")
+    {
+        Variant v_true( true );
+        Variant v_false( false );
+
+        REQUIRE( v_true.type() == Variant::Type::True );
+        REQUIRE( v_false.type() == Variant::Type::Nil );
+    }
 }
 

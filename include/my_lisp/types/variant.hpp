@@ -70,6 +70,18 @@ public:
     {
     }
 
+    constexpr Variant(char8_t parameter) noexcept
+        :
+        _value( FundamentalType::Char(parameter) )
+    {
+    }
+
+    constexpr Variant(char32_t parameter) noexcept
+        :
+        _value( parameter )
+    {
+    }
+
     constexpr Variant &operator =(const Variant &other) = default;
     constexpr Variant &operator =(Variant &&other) noexcept = default;
 
@@ -83,6 +95,18 @@ public:
     constexpr Variant &operator =(FundamentalType::StringView parameter)
     {
         _value = FundamentalType::String(parameter);
+        return *this;
+    }
+
+    constexpr Variant &operator =(char8_t parameter)
+    {
+        _value = FundamentalType::Char(parameter);
+        return *this;
+    }
+
+    constexpr Variant &operator =(char32_t parameter)
+    {
+        _value = parameter;
         return *this;
     }
 
