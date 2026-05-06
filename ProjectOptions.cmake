@@ -79,7 +79,6 @@ macro(my_lisp_setup_options)
     option(my_lisp_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
     option(my_lisp_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
     option(my_lisp_ENABLE_PCH "Enable precompiled headers" OFF)
-    option(my_lisp_ENABLE_CACHE "Enable ccache" OFF)
   else()
     option(my_lisp_ENABLE_IPO "Enable IPO/LTO" ON)
     option(my_lisp_WARNINGS_AS_ERRORS "Treat Warnings As Errors" ON)
@@ -94,7 +93,6 @@ macro(my_lisp_setup_options)
     # compilation when cppcheck is run as part of the compile step.
     option(my_lisp_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
     option(my_lisp_ENABLE_PCH "Enable precompiled headers" OFF)
-    option(my_lisp_ENABLE_CACHE "Enable ccache" ON)
     # Force-disable cppcheck in the CMake cache for top-level builds so any
     # earlier cached ON value does not cause cppcheck to be injected into
     # the compile command. This avoids failing the build when cppcheck is
@@ -117,8 +115,7 @@ macro(my_lisp_setup_options)
       my_lisp_ENABLE_CLANG_TIDY
       my_lisp_ENABLE_CPPCHECK
       my_lisp_ENABLE_COVERAGE
-      my_lisp_ENABLE_PCH
-      my_lisp_ENABLE_CACHE)
+      my_lisp_ENABLE_PCH)
   endif()
 
   my_lisp_check_libfuzzer_support(LIBFUZZER_SUPPORTED)
@@ -185,11 +182,6 @@ macro(my_lisp_local_options)
       <vector>
       <string>
       <utility>)
-  endif()
-
-  if(my_lisp_ENABLE_CACHE)
-    include(cmake/Cache.cmake)
-    my_lisp_enable_cache()
   endif()
 
   include(cmake/StaticAnalyzers.cmake)
