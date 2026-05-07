@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <my_lisp/lisp_library.hpp>
+#include <my_lisp/basic_c_functions.hpp>
 #include <my_lisp/commonlisppredefinedfunctions.hpp>
 
 TEST_CASE("Pathname function tests", "[pathname]")
@@ -134,7 +135,7 @@ TEST_CASE("Pathname function tests", "[pathname]")
 
     SECTION("pathname from Cons")
     {
-        SExpression s = cons(3.14, FundamentalType::String(u8"Hi"));
+        SExpression s = basic_c_functions::cons(3.14, FundamentalType::String(u8"Hi"));
 
         REQUIRE(s.type() == Variant::Type::ConsCell);
 

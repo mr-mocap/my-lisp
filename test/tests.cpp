@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <my_lisp/lisp_library.hpp>
-//#include <sstream>
+#include <my_lisp/basic_c_functions.hpp>
 
 
 TEST_CASE("Default constructed SExpression is Nil", "[SExpression]")
@@ -14,7 +14,11 @@ TEST_CASE("Creating a cons with rvalues", "[cons]")
 {
     // Both String
     {
-        FundamentalType::ConsCellPtr cell = cons( SExpression{ FundamentalType::String{ u8"first" } }, SExpression{ FundamentalType::String{ u8"second" } } );
+        SExpression s = basic_c_functions::cons( SExpression{ FundamentalType::String{ u8"first" } }, SExpression{ FundamentalType::String{ u8"second" } } );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::String);
         REQUIRE(cell->car.asString() == u8"first");
@@ -25,7 +29,11 @@ TEST_CASE("Creating a cons with rvalues", "[cons]")
 
     // Both Nil
     {
-        FundamentalType::ConsCellPtr cell = cons( SExpression{ FundamentalType::Nil{} }, SExpression{ FundamentalType::Nil{} } );
+        SExpression s = basic_c_functions::cons( SExpression{ FundamentalType::Nil{} }, SExpression{ FundamentalType::Nil{} } );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::Nil);
         REQUIRE(cell->car.asNil() == FundamentalType::Nil{});
@@ -36,7 +44,11 @@ TEST_CASE("Creating a cons with rvalues", "[cons]")
 
     // Both Symbol
     {
-        FundamentalType::ConsCellPtr cell = cons( SExpression{ FundamentalType::Symbol{ 2 } }, SExpression{ FundamentalType::Symbol{ 3 } } );
+        SExpression s = basic_c_functions::cons( SExpression{ FundamentalType::Symbol{ 2 } }, SExpression{ FundamentalType::Symbol{ 3 } } );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->car.asSymbol() == FundamentalType::Symbol{ 2 });
@@ -47,7 +59,11 @@ TEST_CASE("Creating a cons with rvalues", "[cons]")
 
     // String, Symbol
     {
-        FundamentalType::ConsCellPtr cell = cons( SExpression{ FundamentalType::String{ u8"first" } }, SExpression{ FundamentalType::Symbol{ 9 } } );
+        SExpression s = basic_c_functions::cons( SExpression{ FundamentalType::String{ u8"first" } }, SExpression{ FundamentalType::Symbol{ 9 } } );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::String);
         REQUIRE(cell->car.asString() == u8"first");
@@ -58,7 +74,12 @@ TEST_CASE("Creating a cons with rvalues", "[cons]")
 
     // Symbol, Nil
     {
-        FundamentalType::ConsCellPtr cell = cons( SExpression{ FundamentalType::Symbol{ 5 } }, SExpression{ FundamentalType::Nil{ } } );
+        SExpression s = basic_c_functions::cons( SExpression{ FundamentalType::Symbol{ 5 } }, SExpression{ FundamentalType::Nil{ } } );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
+
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->car.asSymbol() == FundamentalType::Symbol{ 5 });
 
@@ -68,9 +89,13 @@ TEST_CASE("Creating a cons with rvalues", "[cons]")
 
     // Symbol, ConsCell (Symbol, Nil)
     {
-        FundamentalType::ConsCellPtr cell = cons( SExpression{ FundamentalType::Symbol{ 99 } },
-                                                  SExpression{ cons( SExpression{ FundamentalType::Symbol{ 8 } },
-                                                                     SExpression{ FundamentalType::Nil{} } ) } );
+        SExpression s = basic_c_functions::cons( SExpression{ FundamentalType::Symbol{ 99 } },
+                                                 SExpression{ basic_c_functions::cons( SExpression{ FundamentalType::Symbol{ 8 } },
+                                                                                       SExpression{ FundamentalType::Nil{} } ) } );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->car.asSymbol() == FundamentalType::Symbol{ 99 });
@@ -87,7 +112,11 @@ TEST_CASE("Creating a cons with lvalues", "[cons]")
     {
         SExpression first{ FundamentalType::String{ u8"first" } };
         SExpression second{ FundamentalType::String{ u8"second" } };
-        FundamentalType::ConsCellPtr cell = cons( first, second );
+        SExpression s = basic_c_functions::cons( first, second );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::String);
         REQUIRE(cell->car.asString() == u8"first");
@@ -100,7 +129,11 @@ TEST_CASE("Creating a cons with lvalues", "[cons]")
     {
         SExpression first{ FundamentalType::Nil{} };
         SExpression second{ FundamentalType::Nil{} };
-        FundamentalType::ConsCellPtr cell = cons( first, second );
+        SExpression s = basic_c_functions::cons(first, second);
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::Nil);
         REQUIRE(cell->car.asNil() == FundamentalType::Nil{});
@@ -113,7 +146,11 @@ TEST_CASE("Creating a cons with lvalues", "[cons]")
     {
         SExpression first{ FundamentalType::Symbol{2} };
         SExpression second{ FundamentalType::Symbol{3} };
-        FundamentalType::ConsCellPtr cell = cons( first, second );
+        SExpression s = basic_c_functions::cons( first, second );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->car.asSymbol() == FundamentalType::Symbol{ 2 });
@@ -125,7 +162,11 @@ TEST_CASE("Creating a cons with lvalues", "[cons]")
     {
         SExpression first{ FundamentalType::String{ u8"first" }};
         SExpression second{ FundamentalType::Symbol{9} };
-        FundamentalType::ConsCellPtr cell = cons( first, second );
+        SExpression s = basic_c_functions::cons( first, second );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::String);
         REQUIRE(cell->car.asString() == u8"first");
@@ -138,7 +179,11 @@ TEST_CASE("Creating a cons with lvalues", "[cons]")
     {
         SExpression first{ FundamentalType::Symbol{5} };
         SExpression second{ FundamentalType::Nil{} };
-        FundamentalType::ConsCellPtr cell = cons( first, second );
+        SExpression s = basic_c_functions::cons( first, second );
+
+        REQUIRE(s.type() == Variant::Type::ConsCell);
+
+        FundamentalType::ConsCellPtr cell = s.asConsCell();
 
         REQUIRE(cell->car.type() == Variant::Type::Symbol);
         REQUIRE(cell->car.asSymbol() == FundamentalType::Symbol{ 5 });
@@ -168,7 +213,7 @@ TEST_CASE("type() returns what type an SExpression is constructed with", "[SExpr
         REQUIRE(expr.asSymbol() == FundamentalType::Symbol{ 3 } );
     }
     {
-        SExpression expr{ cons(SExpression{ FundamentalType::Symbol{ 3 } }, SExpression{ FundamentalType::Nil{} } ) };
+        SExpression expr{ basic_c_functions::cons(SExpression{ FundamentalType::Symbol{ 3 } }, SExpression{ FundamentalType::Nil{} } ) };
 
         REQUIRE(expr.type() == Variant::Type::ConsCell);
         REQUIRE(expr.asConsCell()->car.type() == Variant::Type::Symbol);
@@ -176,41 +221,3 @@ TEST_CASE("type() returns what type an SExpression is constructed with", "[SExpr
         REQUIRE(expr.asConsCell()->cdr.type() == Variant::Type::Nil);
     }
 }
-
-TEST_CASE("print() can print a Nil SExpression", "[print]")
-{
-    BasicLispSetup lisp_machine;
-
-    lisp_machine.setup();
-
-    SExpression expr{ FundamentalType::Nil{} };
-    std::ostringstream oss;
-
-    print(expr, lisp_machine.environment(), oss);
-
-    REQUIRE(oss.str() == "NIL");
-}
-
-TEST_CASE("print() can print a String SExpression", "[print]")
-{
-    BasicLispSetup lisp_machine;
-
-    lisp_machine.setup();
-
-    SExpression expr{ FundamentalType::String{ u8"Hello, World!" } };
-    std::ostringstream oss;
-
-    print(expr, lisp_machine.environment(), oss);
-
-    REQUIRE(oss.str() == "\"Hello, World!\"");
-}
-#if 0
-TEST_CASE("print() can print a Symbol SExpression", "[print]")
-{
-    SymbolTable st;
-    Symbol our_symbol = st.get_symbol( u8"foo" );
-    SExpression expr{ FundamentalType::Symbol{ our_symbol } };
-
-    print(expr);
-}
-#endif

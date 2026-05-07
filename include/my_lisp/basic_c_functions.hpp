@@ -216,6 +216,8 @@ inline bool logical_not(const SExpression &parameter)
 SExpression prin1(Environment &current_environment, const SExpression &parameter);
 SExpression print(Environment &current_environment, const SExpression &parameter);
 
+void print_contents(Environment &current_environment, const SExpression &parameter);
+
 SExpression eval(Environment &current_environment, const SExpression &form);
 void eval(Environment &current_environment, SExpressionSpan forms);
 

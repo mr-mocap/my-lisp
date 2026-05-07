@@ -9,6 +9,78 @@
 namespace basic_c_functions
 {
 
+struct SExpressionPrinter {
+    explicit SExpressionPrinter(std::ostream &out, Environment &e, const SExpression &p)
+        :
+        output(out),
+        env(e),
+        parameter(p)
+    {
+    }
+
+    void operator()(FundamentalType::Nil) const
+    {
+        std::print(output, "NIL");
+    }
+    void operator()(FundamentalType::True) const
+    {
+        std::print(output, "T");
+    }
+    void operator()(const FundamentalType::String &s) const
+    {
+        std::print(output, "\"{}\"", text_io::to_string_view(s));
+    }
+    void operator()(const FundamentalType::Pathname &p) const
+    {
+        std::print(output, "\"{}\"", text_io::to_string_view(p.u8string()));
+    }
+    void operator()(FundamentalType::Symbol s) const
+    {
+        FundamentalType::StringView sym_name( env.symbol_name(s) );
+
+        std::print(output, "{}", (sym_name.empty()) ? "NIL" : text_io::to_string_view(sym_name));
+    }
+    void operator()(FundamentalType::Number d) const
+    {
+        std::print(output, "{}", d);
+    }
+    void operator()(FundamentalType::FixedNumber fixednum) const
+    {
+        std::print(output, "{}", fixednum);
+    }
+    void operator()(FundamentalType::Char c) const
+    {
+        // naive conversion of codepoint to utf-8 bytes is not implemented;
+        // print as numeric value for now
+        if ( c <= 0x7F )
+            std::print(output, "\'{}\'", static_cast<char>(c));
+        else
+            std::print(output, "Printing characters outside of ASCII range not implemented yet");
+    }
+    void operator()(FundamentalType::Function) const
+    {
+        std::print(output, "#<Function>");
+    }
+    void operator()(FundamentalType::PackagePtr) const
+    {
+        std::print(output, "#<Package>");
+    }
+    void operator()(FundamentalType::StreamPtr) const
+    {
+        std::print(output, "#<Stream>");
+    }
+    void operator()(FundamentalType::ConsCellPtr ) const
+    {
+        std::print("(");
+        print_contents( env, parameter );
+        std::print(")");
+    }
+
+    std::ostream &output;
+    Environment &env;
+    const SExpression &parameter;
+};
+
 static const std::array<FundamentalType::StringView, 25> SpecialOperatorNames{
     u8"block",
     u8"catch",
@@ -84,93 +156,7 @@ bool equalp(const SExpression &, const SExpression &)
 
 SExpression prin1(Environment &current_environment, const SExpression &parameter)
 {
-    struct Visitor {
-        explicit Visitor(std::ostream &out, const Environment &e) : output(out), env(e) {}
-        explicit Visitor(std::ostream &out, const Environment &e, int i) : output(out), env(e), iteration(i) {}
-
-        void operator()(FundamentalType::Nil) const
-        {
-            std::print(output, "NIL");
-        }
-        void operator()(FundamentalType::True) const
-        {
-            std::print(output, "T");
-        }
-        void operator()(const FundamentalType::String &s) const
-        {
-            std::print(output, "\"{}\"", text_io::to_string_view(s));
-        }
-        void operator()(const FundamentalType::Pathname &p) const
-        {
-            std::print(output, "\"{}\"", text_io::to_string_view(p.u8string()));
-        }
-        void operator()(FundamentalType::Symbol s) const
-        {
-            FundamentalType::StringView sym_name( env.symbol_name(s) );
-
-            std::print(output, "{}", (sym_name.empty()) ? "NIL" : text_io::to_string_view(sym_name));
-        }
-        void operator()(FundamentalType::Number d) const
-        {
-            std::print(output, "{}", d);
-        }
-        void operator()(FundamentalType::FixedNumber fixednum) const
-        {
-            std::print(output, "{}", fixednum);
-        }
-        void operator()(FundamentalType::Char c) const
-        {
-            // naive conversion of codepoint to utf-8 bytes is not implemented;
-            // print as numeric value for now
-            if ( c <= 0x7F )
-                std::print(output, "{}", static_cast<char>(c));
-            else
-                std::print(output, "Printing characters outside of ASCII range not implemented yet");
-        }
-        void operator()(FundamentalType::Function) const
-        {
-            std::print(output, "FunctionPtr");
-        }
-        void operator()(FundamentalType::PackagePtr) const
-        {
-            std::print(output, "Package");
-        }
-        void operator()(FundamentalType::StreamPtr) const
-        {
-            std::print(output, "Stream");
-        }
-        void operator()(FundamentalType::ConsCellPtr cons) const
-        {
-            if ( cons->isEndList() )
-            {
-                cons->car.visit( Visitor( output, env, iteration ) );
-                std::print(output, ")");
-            }
-            else if ( cons->isList() )
-            {
-                if ( iteration == 0 )
-                    std::print(output, "(");
-
-                cons->car.visit( Visitor( output, env, iteration ) );
-                std::print(output, " ");
-                cons->cdr.visit( Visitor( output, env, iteration + 1 ) );
-            }
-            else if ( cons->isDottedPair() )
-            {
-                std::print(output, "(");
-                cons->car.visit( Visitor( output, env ) );
-                std::print(output, " . ");
-                cons->cdr.visit( Visitor( output, env ) );
-                std::print(output, ")");
-            }
-        }
-
-        std::ostream &output;
-        const Environment &env;
-        int iteration = 0;
-    };
-
-    parameter.visit( Visitor( std::cout, current_environment ) );
+    parameter.visit( SExpressionPrinter( std::cout, current_environment, parameter ) );
     return parameter;
 }
 
@@ -180,6 +166,25 @@ SExpression print(Environment &current_environment, const SExpression &parameter
     prin1( current_environment, parameter );
     std::print( std::cout, " " );
     return parameter;
+}
+
+void print_contents(Environment &current_environment, const SExpression &parameter)
+{
+    if ( listp(parameter) )
+    {
+        if ( endp(parameter) )
+            return;
+
+        prin1( current_environment, car(parameter) );
+
+        // Print a separator space if there are more items to print in the list
+        if ( consp( rest(parameter) ) )
+            std::print(std::cout, " ");
+
+        print_contents( current_environment, rest(parameter) );
+    }
+    else
+        prin1( current_environment, parameter );
 }
 
 SExpression eval(Environment &current_environment, const SExpression &form)

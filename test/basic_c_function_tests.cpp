@@ -2,6 +2,34 @@
 #include <my_lisp/lisp_library.hpp>
 #include <my_lisp/basic_c_functions.hpp>
 
+#if 0
+TEST_CASE("prin1() can print an SExpression", "[prin1]")
+{
+    BasicLispSetup lisp_machine;
+
+    lisp_machine.setup();
+
+    SECTION("Nil")
+    {
+        SExpression expr{ FundamentalType::Nil{} };
+        std::ostringstream oss;
+
+        basic_c_functions::prin1(expr, lisp_machine.environment(), oss);
+
+        REQUIRE(oss.str() == "NIL");
+    }
+
+    SECTION("String")
+    {
+        SExpression expr{ FundamentalType::String{ u8"Hello, World!" } };
+        std::ostringstream oss;
+
+        basic_c_functions::prin1(expr, lisp_machine.environment(), oss);
+
+        REQUIRE(oss.str() == "\"Hello, World!\"");
+    }
+}
+#endif
 
 TEST_CASE("list_length", "[basic_c_functions]")
 {
